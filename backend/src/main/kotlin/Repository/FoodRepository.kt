@@ -2,6 +2,7 @@ package com.zeroperte.Repository
 
 import io.ktor.util.logging.*
 import com.zeroperte.model.Food
+import com.zeroperte.model.FoodDto
 import kotlinx.datetime.LocalDateTime
 import org.jetbrains.exposed.v1.core.Column
 import org.jetbrains.exposed.v1.core.ResultRow
@@ -9,6 +10,7 @@ import org.jetbrains.exposed.v1.core.dao.id.LongIdTable
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.datetime.*
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
+import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
@@ -70,10 +72,26 @@ class FoodRepository {
         }
     }
 
-    fun update(id: Long, food: Food): Food {
-        return transaction {
-            FoodTable.update ({ FoodTable.id eq id}) { row ->
-            }
+    fun update(id: Long, foodDto: FoodDto): Food? {
+        val updateRow = transaction {
+                            FoodTable.update ({ FoodTable.id eq id}) { row ->
+                                if (foodDto.name != null) row[name] = foodDto.name
+                                if (foodDto.brand != null) row[brand] = foodDto.brand
+                                if (foodDto.category != null) row[category] = foodDto.category
+                                if (foodDto.comment != null) row[comment] = foodDto.comment
+                                if (foodDto.amount != null) row[amount] = foodDto.amount
+                            }
+                        }
+        LOGGER.info("row updated $updateRow")
+        return findById(id);
+    }
+
+    fun delete(id: Long): Int {
+        val deletedRow = transaction {
+            FoodTable.deleteWhere { FoodTable.id eq id }
+        }
+        LOGGER.info("Id $id removed and $deletedRow row has been deleted")
+        return deletedRow
     }
 
 }
