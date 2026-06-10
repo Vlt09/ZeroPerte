@@ -1,0 +1,81 @@
+package com.zeroperte.Repository
+
+import io.ktor.util.logging.*
+import com.zeroperte.model.Food
+import kotlinx.datetime.LocalDateTime
+import org.jetbrains.exposed.v1.core.Column
+import org.jetbrains.exposed.v1.core.ResultRow
+import org.jetbrains.exposed.v1.core.dao.id.LongIdTable
+import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.datetime.*
+import org.jetbrains.exposed.v1.jdbc.SchemaUtils
+import org.jetbrains.exposed.v1.jdbc.insertAndGetId
+import org.jetbrains.exposed.v1.jdbc.selectAll
+import org.jetbrains.exposed.v1.jdbc.transactions.transaction
+import org.jetbrains.exposed.v1.jdbc.update
+
+internal val LOGGER = KtorSimpleLogger("com.zeroperte.FoodRepositoryLogger")
+
+
+
+internal object FoodTable : LongIdTable() {
+    val name: Column<String> = varchar("food", 100)
+    val brand: Column<String?> = varchar("brand", 30).nullable()
+    val category: Column<String> = varchar("category", 30)
+    val datePurchased: Column<LocalDateTime> = datetime("date_purchased")
+    val expiryDate: Column<LocalDateTime> = datetime("expiry_date")
+    val comment: Column<String?> = text("comment").nullable()
+    val amount: Column<Int> = integer("amount")
+
+    fun toDomain(row: ResultRow): Food {
+        return Food(
+            id = row[id].value,
+            name = row[name],
+            brand = row[brand],
+            category = row[category],
+            datePurchased = row[datePurchased],
+            expiryDate = row[expiryDate],
+            comment = row[comment],
+            amount = row[amount]
+        )
+    }}
+
+class FoodRepository {
+    init {
+        LOGGER.info("init FoodRepository");
+        transaction {
+            SchemaUtils.create(FoodTable)
+        }
+    }
+
+    fun findById(id: Long): Food? {
+        return transaction {
+            FoodTable.selectAll().where { FoodTable.id eq id }
+                .map { FoodTable.toDomain(it) }
+                .singleOrNull()
+        }
+    }
+
+    fun create(food: Food): Long {
+        return transaction {
+            FoodTable.insertAndGetId { row ->
+                row[name] = food.name
+                row[brand] = food.brand
+                row[category] = food.category
+                row[datePurchased] = food.datePurchased
+                row[expiryDate] = food.expiryDate
+                row[comment] = row[comment]
+                row[amount] = row[amount]
+            }.value
+        }
+    }
+
+    fun update(id: Long, food: Food): Food {
+        return transaction {
+            FoodTable.update ({ FoodTable.id eq id}) { row ->
+            }
+    }
+
+}
+
+
