@@ -43,6 +43,25 @@ internal object FoodTable : LongIdTable() {
     }}
 
 class FoodRepository {
+    private fun sampleFood(name: String = "Yaourt") = Food(
+        id = 0,
+        name = name,
+        brand = "Danone",
+        category = "Produit laitier",
+        datePurchased = LocalDateTime(2026, 6, 1, 10, 0),
+        expiryDate = LocalDateTime(2026, 6, 15, 0, 0),
+        comment = "A consommer rapidement",
+        amount = 4
+    )
+
+    val foodsList = mutableListOf<Food>(
+        sampleFood("Test1"),
+        sampleFood("Test2"),
+        sampleFood("Test3"),
+        sampleFood("Test4"),
+        sampleFood("Test5")
+    )
+
     init {
         LOGGER.info("init FoodRepository");
         transaction {
@@ -58,6 +77,12 @@ class FoodRepository {
         }
     }
 
+    fun allFoods(): List<Food> {
+        return transaction {
+            FoodTable.selectAll().map { FoodTable.toDomain(it) }.toList()
+        }
+    }
+
     fun create(food: Food): Long {
         return transaction {
             FoodTable.insertAndGetId { row ->
@@ -66,8 +91,8 @@ class FoodRepository {
                 row[category] = food.category
                 row[datePurchased] = food.datePurchased
                 row[expiryDate] = food.expiryDate
-                row[comment] = row[comment]
-                row[amount] = row[amount]
+                row[comment] = food.comment
+                row[amount] = food.amount
             }.value
         }
     }
