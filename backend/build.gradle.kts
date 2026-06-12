@@ -15,6 +15,7 @@ kotlin {
     jvmToolchain(21)
 }
 dependencies {
+    implementation(kotlin("reflect"))
     implementation(ktorLibs.serialization.kotlinx.json)
     implementation(ktorLibs.server.config.yaml)
     implementation(ktorLibs.server.contentNegotiation)

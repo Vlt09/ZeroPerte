@@ -1,9 +1,19 @@
 package com.zeroperte.model
 
 import kotlinx.datetime.LocalDateTime
+import kotlin.reflect.full.declaredMemberProperties
+import kotlin.reflect.full.memberProperties
 
 data class Food(val id: Long, val name: String, val brand: String?, val category: String,
-                val datePurchased: LocalDateTime, val expiryDate: LocalDateTime, val comment: String?, val amount: Int);
+                val datePurchased: LocalDateTime, val expiryDate: LocalDateTime, val comment: String?, val amount: Int) {
+    companion object {
+        fun getMemberPropertiesString() : List<String> {
+            return Food::class.declaredMemberProperties.map { p -> p.name }.toList()
+        }
+    }
+};
+
+
 
 fun Food.foodAsRow() = """
     <tr>
