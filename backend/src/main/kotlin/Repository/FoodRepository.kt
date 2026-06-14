@@ -3,7 +3,8 @@ package com.zeroperte.Repository
 import io.ktor.util.logging.*
 import com.zeroperte.model.Food
 import com.zeroperte.model.FoodDto
-import kotlinx.datetime.LocalDateTime
+import com.zeroperte.model.FoodPostDto
+import kotlinx.datetime.LocalDate
 import org.jetbrains.exposed.v1.core.Column
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.dao.id.LongIdTable
@@ -23,9 +24,9 @@ internal val LOGGER = KtorSimpleLogger("com.zeroperte.FoodRepositoryLogger")
 internal object FoodTable : LongIdTable() {
     val name: Column<String> = varchar("food", 100)
     val brand: Column<String?> = varchar("brand", 30).nullable()
-    val category: Column<String> = varchar("category", 30)
-    val datePurchased: Column<LocalDateTime> = datetime("date_purchased")
-    val expiryDate: Column<LocalDateTime> = datetime("expiry_date")
+    val category: Column<String?> = varchar("category", 30).nullable()
+    val datePurchased: Column<LocalDate?> = date("date_purchased").nullable()
+    val expiryDate: Column<LocalDate> = date("expiry_date")
     val comment: Column<String?> = text("comment").nullable()
     val amount: Column<Int> = integer("amount")
 
@@ -48,8 +49,8 @@ class FoodRepository {
         name = name,
         brand = "Danone",
         category = "Produit laitier",
-        datePurchased = LocalDateTime(2026, 6, 1, 10, 0),
-        expiryDate = LocalDateTime(2026, 6, 15, 0, 0),
+        datePurchased = LocalDate(2026, 6, 1),
+        expiryDate = LocalDate(2026, 6, 15),
         comment = "A consommer rapidement",
         amount = 4
     )
@@ -83,16 +84,16 @@ class FoodRepository {
         }
     }
 
-    fun create(food: Food): Long {
+    fun create(foodPostDto: FoodPostDto): Long {
         return transaction {
             FoodTable.insertAndGetId { row ->
-                row[name] = food.name
-                row[brand] = food.brand
-                row[category] = food.category
-                row[datePurchased] = food.datePurchased
-                row[expiryDate] = food.expiryDate
-                row[comment] = food.comment
-                row[amount] = food.amount
+                row[name] = foodPostDto.name
+                row[brand] = foodPostDto.brand
+                row[category] = foodPostDto.category
+                row[datePurchased] = foodPostDto.datePurchased
+                row[expiryDate] = foodPostDto.expiryDate
+                row[comment] = foodPostDto.comment
+                row[amount] = foodPostDto.amount
             }.value
         }
     }

@@ -2,6 +2,8 @@ package com.zeroperte.Repository
 
 import com.zeroperte.model.Food
 import com.zeroperte.model.FoodDto
+import com.zeroperte.model.FoodPostDto
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
@@ -30,15 +32,25 @@ class FoodRepositoryTest {
         name = name,
         brand = "Danone",
         category = "Produit laitier",
-        datePurchased = LocalDateTime(2026, 6, 1, 10, 0),
-        expiryDate = LocalDateTime(2026, 6, 15, 0, 0),
+        datePurchased = LocalDate(2026, 6, 1),
+        expiryDate = LocalDate(2026, 6, 15),
+        comment = "A consommer rapidement",
+        amount = 4
+    )
+
+    private fun sampleFoodPostDto(name: String = "Yaourt") = FoodPostDto(
+        name = name,
+        brand = "Danone",
+        category = "Produit laitier",
+        datePurchased = LocalDate(2026, 6, 1),
+        expiryDate = LocalDate(2026, 6, 15),
         comment = "A consommer rapidement",
         amount = 4
     )
 
     @Test
     fun `create insère un aliment et retourne un id`() {
-        val id = repository.create(sampleFood())
+        val id = repository.create(sampleFoodPostDto())
 
         assertNotNull(id)
 
@@ -58,7 +70,7 @@ class FoodRepositoryTest {
 
     @Test
     fun `update modifie uniquement les champs renseignés`() {
-        val id = repository.create(sampleFood())
+        val id = repository.create(sampleFoodPostDto())
 
         val dto = FoodDto(
             name = "Yaourt nature",
@@ -99,7 +111,7 @@ class FoodRepositoryTest {
 
     @Test
     fun `delete supprime un aliment existant`() {
-        val id = repository.create(sampleFood())
+        val id = repository.create(sampleFoodPostDto())
 
         val deletedCount = repository.delete(id)
 

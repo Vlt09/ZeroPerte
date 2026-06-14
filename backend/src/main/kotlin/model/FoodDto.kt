@@ -1,6 +1,9 @@
 package com.zeroperte.model
 
-import kotlinx.datetime.LocalDateTime
+import kotlinx.datetime.LocalDate
 
 data class FoodDto(val name: String?, val brand: String?, val category: String?,
-                   val datePurchased: LocalDateTime?, val expiryDate: LocalDateTime?, val comment: String?, val amount: Int?)
+                   val datePurchased: LocalDate?, val expiryDate: LocalDate?, val comment: String?, val amount: Int?)
+
+data class FoodPostDto(val name: String, val brand: String?, val category: String?,
+                   val datePurchased: LocalDate?, val expiryDate: LocalDate, val comment: String?, val amount: Int)
