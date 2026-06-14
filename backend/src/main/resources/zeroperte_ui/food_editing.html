@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Editing a food</title>
+</head>
+<body>
+<h1>Editing a food</h1>
+<script type="application/javascript">
+    async function loadFood() {
+        const id = document.getElementById("foodId").value;
+        const resp = await fetch(`/foods/${id}`, { headers: { 'Accept': 'application/json' } });
+        if (!resp.ok) {
+            alert("Food not found");
+            return;
+        }
+        const food = await resp.json();
+        document.getElementById("name").value = food.name ?? "";
+        document.getElementById("brand").value = food.brand ?? "";
+        document.getElementById("category").value = food.category ?? "";
+        document.getElementById("datePurchased").value = food.datePurchased ?? "";
+        document.getElementById("expiryDate").value = food.expiryDate ?? "";
+        document.getElementById("comment").value = food.comment ?? "";
+        document.getElementById("amount").value = food.amount ?? "";
+    }
+
+    async function submitUpdate() {
+        const id = document.getElementById("foodId").value;
+        const body = new URLSearchParams({
+            name: document.getElementById("name").value,
+            brand: document.getElementById("brand").value,
+            category: document.getElementById("category").value,
+            datePurchased: document.getElementById("datePurchased").value,
+            expiryDate: document.getElementById("expiryDate").value,
+            comment: document.getElementById("comment").value,
+            amount: document.getElementById("amount").value,
+        });
+        const resp = await fetch(`/foods/${id}`, {
+            method: "PUT",
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: body.toString()
+        });
+        if (resp.ok) {
+            alert("Food updated successfully");
+        } else {
+            alert("Update failed: " + resp.status);
+        }
+    }
+</script>
+
+<div>
+    <label for="foodId">Food ID : </label>
+    <input type="number" id="foodId" name="foodId" size="5">
+    <button onclick="loadFood()">Load</button>
+</div>
+
+<br>
+
+<div>
+    <div>
+        <label for="name">Name : </label>
+        <input type="text" id="name" name="name" size="10">
+    </div>
+    <div>
+        <label for="brand">Brand : </label>
+        <input type="text" id="brand" name="brand" size="20">
+        <label for="category"></label><input type="text" id="category" name="category" size="20">
+        <label for="datePurchased"></label><input type="date" id="datePurchased" name="datePurchased">
+        <label for="expiryDate"></label><input type="date" id="expiryDate" name="expiryDate">
+        <label for="comment">Comment : </label>
+        <input type="text" id="comment" name="comment" size="150">
+        <label for="amount"></label><input type="number" id="amount" name="amount">
+    </div>
+    <br>
+    <button onclick="submitUpdate()">Update</button>
+</div>
+</body>
+</html>
