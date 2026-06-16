@@ -18,6 +18,12 @@ import kotlin.reflect.full.primaryConstructor
 
 internal val LOGGER = KtorSimpleLogger("com.zeroperte.RoutingLogger")
 
+internal val filterPropertyGetRoute = listOf<String>(
+    "name",
+    "category",
+    "brand"
+)
+
 /**
  * Converts form parameters into a DTO instance using reflection.
  *
@@ -38,7 +44,8 @@ internal val LOGGER = KtorSimpleLogger("com.zeroperte.RoutingLogger")
  *
  * @see Food.getMemberPropertiesString
  * @see Food.converters
- */internal fun <T> formContentToFoodPostDto(formContent: Parameters, dtoConstructor: KFunction<T>): T{
+ */
+internal fun <T> formContentToFoodDto(formContent: Parameters, dtoConstructor: KFunction<T>): T{
     // Instead of having declared list in which we have one line per Food properties, we use reflection
     val params = Food.getMemberPropertiesString().associateWith { d -> (formContent[d] ?: "") }
 
@@ -48,6 +55,16 @@ internal val LOGGER = KtorSimpleLogger("com.zeroperte.RoutingLogger")
     }
 
     return dtoConstructor.callBy(args)
+}
+private suspend fun getParameterFromURL(call: RoutingCall, parameterName: String): String?{
+    val foodEntityProperty = call.parameters[parameterName]
+
+    if (foodEntityProperty == null) {
+        call.respond(HttpStatusCode.BadRequest)
+        return null
+    }
+    return foodEntityProperty
+
 }
 
 fun Application.configureRouting() {
@@ -65,86 +82,152 @@ fun Application.configureRouting() {
             call.respond(mapOf("hello" to "world"))
         }
 
-        get("/foods"){
-            val foodsList = foodRepository.allFoods()
-            call.respond(
-                foodsList
-            )
-        }
+        route("/foods"){
+            route("/{id}") {
+                get{
+                    val idAsText = call.parameters["id"]
+                    if (idAsText == null) {
+                        call.respond(HttpStatusCode.BadRequest)
+                        return@get
+                    }
 
-        get("/foods/{id?}"){
-            val idAsText = call.parameters["id"]
-            if (idAsText == null) {
-                call.respond(HttpStatusCode.BadRequest)
-                return@get
-            }
+                    try {
+                        val food = foodRepository.findById(idAsText.toLong())
 
-            try {
-                val food = foodRepository.findById(idAsText.toLong())
+                        if (food == null) {
+                            call.respond(HttpStatusCode.NotFound)
+                            return@get
+                        }
 
-                if (food == null) {
-                    call.respond(HttpStatusCode.NotFound)
-                    return@get
+                        call.respond(food)
+
+                    }catch (ex: IllegalArgumentException) {
+                        call.respond(HttpStatusCode.BadRequest)
+                    }
                 }
 
-                call.respond(food)
+                put{
+                    val formContent = call.receiveParameters()
+                    val idAsText = call.parameters["id"]
 
-            }catch (ex: IllegalArgumentException) {
-                call.respond(HttpStatusCode.BadRequest)
+                    if (idAsText == null) {
+                        call.respond(HttpStatusCode.BadRequest)
+                        return@put
+                    }
+
+                    try {
+                        val constructor = FoodDto::class.primaryConstructor!!
+
+                        val foodDto = formContentToFoodDto<FoodDto>(formContent, constructor)
+                        val updatedFood = foodRepository.update(idAsText.toLong(), foodDto)
+
+                        if (updatedFood == null) {
+                            call.respond(HttpStatusCode.BadRequest)
+                            return@put
+                        }
+
+                        call.respond(HttpStatusCode.Created, updatedFood.id)
+                        LOGGER.info("food with id $updatedFood.id has been updated : $foodDto")
+
+
+                    } catch (ex: IllegalArgumentException) {
+                        call.respond(HttpStatusCode.BadRequest, ex.message ?: "")
+                    } catch (ex: IllegalStateException) {
+                        call.respond(HttpStatusCode.BadRequest, ex.message ?: "")
+                    }
+                }
+
+                delete{
+                    val idAsText = call.parameters["id"]
+
+                    if (idAsText == null) {
+                        call.respond(HttpStatusCode.BadRequest)
+                        return@delete
+                    }
+
+                    try {
+                        val id = foodRepository.delete(idAsText.toLong())
+
+                        LOGGER.info("food has been deleted : $id")
+                        call.respond(id)
+
+                    }catch (ex: IllegalArgumentException) {
+                        call.respond(HttpStatusCode.BadRequest)
+                    }
+                }
+
             }
-        }
 
-        post("/foods"){
-            val formContent = call.receiveParameters()
-
-            try {
-                // Use reflection to avoid writing all data properties for FoodPostDto
-                val constructor = FoodPostDto::class.primaryConstructor!!
-
-                val foodDto = formContentToFoodPostDto<FoodPostDto>(formContent, constructor)
-                val id = foodRepository.create(foodDto)
-
-                call.respond(HttpStatusCode.Created, id)
-                LOGGER.info("food has been created with id $id: $foodDto")
-
-
-            } catch (ex: IllegalArgumentException) {
-                call.respond(HttpStatusCode.BadRequest, ex.message ?: "")
-            } catch (ex: IllegalStateException) {
-                call.respond(HttpStatusCode.BadRequest, ex.message ?: "")
-            }
-        }
-
-        put("/foods/{id}"){
-            val formContent = call.receiveParameters()
-            val idAsText = call.parameters["id"]
-
-            if (idAsText == null) {
-                call.respond(HttpStatusCode.BadRequest)
-                return@put
+            get{
+                val foodsList = foodRepository.allFoods()
+                call.respond(
+                    foodsList
+                )
             }
 
-            try {
-                val constructor = FoodDto::class.primaryConstructor!!
+            get("?name={name}") {
+                val foodEntityName = getParameterFromURL(call, "name") ?: return@get
 
-                val foodDto = formContentToFoodPostDto<FoodDto>(formContent, constructor)
-                val updatedFood = foodRepository.update(idAsText.toLong(), foodDto)
+                try {
+                    val foodListByName = foodRepository.findByName(foodEntityName)
 
-                if (updatedFood == null) {
+                    LOGGER.info("$foodEntityName has been found ${foodListByName.size}")
+                    call.respond(foodListByName)
+
+                }catch (ex: IllegalArgumentException) {
                     call.respond(HttpStatusCode.BadRequest)
-                    return@put
                 }
+            }
 
-                call.respond(HttpStatusCode.Created, updatedFood.id)
-                LOGGER.info("food with id $updatedFood.id has been updated : $foodDto")
+            get("?category={category}") {
+                val foodEntityCategory = getParameterFromURL(call, "category") ?: return@get
+
+                try {
+                    val foodListByName = foodRepository.findByName(foodEntityCategory)
+
+                    LOGGER.info("$foodEntityCategory has been found ${foodListByName.size}")
+                    call.respond(foodListByName)
+
+                }catch (ex: IllegalArgumentException) {
+                    call.respond(HttpStatusCode.BadRequest)
+                }
+            }
+
+            get("?brand={brand}") {
+                val foodEntityBrand = getParameterFromURL(call, "brand") ?: return@get
+
+                try {
+                    val foodListByName = foodRepository.findByName(foodEntityBrand)
+
+                    LOGGER.info("$foodEntityBrand has been found ${foodListByName.size}")
+                    call.respond(foodListByName)
+
+                }catch (ex: IllegalArgumentException) {
+                    call.respond(HttpStatusCode.BadRequest)
+                }
+            }
 
 
-            } catch (ex: IllegalArgumentException) {
-                call.respond(HttpStatusCode.BadRequest, ex.message ?: "")
-            } catch (ex: IllegalStateException) {
-                call.respond(HttpStatusCode.BadRequest, ex.message ?: "")
+            post{
+                val formContent = call.receiveParameters()
+
+                try {
+                    // Use reflection to avoid writing all data properties for FoodPostDto
+                    val constructor = FoodPostDto::class.primaryConstructor!!
+
+                    val foodDto = formContentToFoodDto(formContent, constructor)
+                    val id = foodRepository.create(foodDto)
+
+                    call.respond(HttpStatusCode.Created, id)
+                    LOGGER.info("food has been created with id $id: $foodDto")
+
+
+                } catch (ex: IllegalArgumentException) {
+                    call.respond(HttpStatusCode.BadRequest, ex.message ?: "")
+                } catch (ex: IllegalStateException) {
+                    call.respond(HttpStatusCode.BadRequest, ex.message ?: "")
+                }
             }
         }
-
     }
 }

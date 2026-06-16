@@ -4,11 +4,13 @@ import io.ktor.util.logging.*
 import com.zeroperte.model.Food
 import com.zeroperte.model.FoodDto
 import com.zeroperte.model.FoodPostDto
+import kotlinx.coroutines.yield
 import kotlinx.datetime.LocalDate
 import org.jetbrains.exposed.v1.core.Column
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.dao.id.LongIdTable
 import org.jetbrains.exposed.v1.core.eq
+import org.jetbrains.exposed.v1.core.like
 import org.jetbrains.exposed.v1.datetime.*
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
@@ -16,6 +18,7 @@ import org.jetbrains.exposed.v1.jdbc.insertAndGetId
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.jetbrains.exposed.v1.jdbc.update
+import kotlin.reflect.full.memberProperties
 
 internal val LOGGER = KtorSimpleLogger("com.zeroperte.FoodRepositoryLogger")
 
@@ -44,24 +47,6 @@ internal object FoodTable : LongIdTable() {
     }}
 
 class FoodRepository {
-    private fun sampleFood(name: String = "Yaourt") = Food(
-        id = 0,
-        name = name,
-        brand = "Danone",
-        category = "Produit laitier",
-        datePurchased = LocalDate(2026, 6, 1),
-        expiryDate = LocalDate(2026, 6, 15),
-        comment = "A consommer rapidement",
-        amount = 4
-    )
-
-    val foodsList = mutableListOf<Food>(
-        sampleFood("Test1"),
-        sampleFood("Test2"),
-        sampleFood("Test3"),
-        sampleFood("Test4"),
-        sampleFood("Test5")
-    )
 
     init {
         LOGGER.info("init FoodRepository");
@@ -75,6 +60,32 @@ class FoodRepository {
             FoodTable.selectAll().where { FoodTable.id eq id }
                 .map { FoodTable.toDomain(it) }
                 .singleOrNull()
+        }
+    }
+
+    fun findByName(name: String): List<Food> {
+        return transaction {
+            FoodTable.selectAll().where{ FoodTable.name eq name }
+                .map { FoodTable.toDomain(it) }
+            .toList()
+        }
+    }
+
+    fun findByCategory(category: String): List<Food> {
+        return transaction {
+            FoodTable.selectAll().where{
+                FoodTable.category eq category}
+                .map { FoodTable.toDomain(it) }
+                .toList()
+        }
+    }
+
+    fun findByBrand(brand: String): List<Food> {
+        return transaction {
+            FoodTable.selectAll().where{
+                FoodTable.brand eq brand}
+                .map { FoodTable.toDomain(it) }
+                .toList()
         }
     }
 

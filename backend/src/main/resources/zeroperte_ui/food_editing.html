@@ -24,6 +24,22 @@
         document.getElementById("amount").value = food.amount ?? "";
     }
 
+    async function deleteFood() {
+        const id = document.getElementById("foodId").value;
+        if (!id) {
+            alert("Load a food first");
+            return;
+        }
+        if (!confirm(`Delete food #${id} ?`)) return;
+
+        const resp = await fetch(`/foods/${id}`, { method: "DELETE" });
+        if (resp.ok) {
+            alert("Food deleted");
+        } else {
+            alert("Delete failed: " + resp.status);
+        }
+    }
+
     async function submitUpdate() {
         const id = document.getElementById("foodId").value;
         const body = new URLSearchParams({
@@ -73,6 +89,7 @@
     </div>
     <br>
     <button onclick="submitUpdate()">Update</button>
+    <button onclick="deleteFood()" style="color: red">Delete</button>
 </div>
 </body>
 </html>

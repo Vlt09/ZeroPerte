@@ -709,6 +709,9 @@
                     <li data-group="Default" data-name="foodsGet" class="">
                       <a href="#api-Default-foodsGet">foodsGet</a>
                     </li>
+                    <li data-group="Default" data-name="foodsIdDelete" class="">
+                      <a href="#api-Default-foodsIdDelete">foodsIdDelete</a>
+                    </li>
                     <li data-group="Default" data-name="foodsIdGet" class="">
                       <a href="#api-Default-foodsIdGet">foodsIdGet</a>
                     </li>
@@ -717,6 +720,9 @@
                     </li>
                     <li data-group="Default" data-name="foodsPost" class="">
                       <a href="#api-Default-foodsPost">foodsPost</a>
+                    </li>
+                    <li data-group="Default" data-name="foodsnamenameGet" class="">
+                      <a href="#api-Default-foodsnamenameGet">foodsnamenameGet</a>
                     </li>
                     <li data-group="Default" data-name="jsonKotlinxSerializationGet" class="">
                       <a href="#api-Default-jsonKotlinxSerializationGet">jsonKotlinxSerializationGet</a>
@@ -933,6 +939,238 @@ except ApiException as e:
 
                           <h2>Parameters</h2>
 
+
+
+
+
+
+                          <h2>Responses</h2>
+                        </article>
+                      </div>
+                      <hr>
+                    <div id="api-Default-foodsIdDelete">
+                      <article id="api-Default-foodsIdDelete-0" data-group="User" data-name="foodsIdDelete" data-version="0">
+                        <div class="pull-left">
+                          <h1>foodsIdDelete</h1>
+                          <p></p>
+                        </div>
+                        <div class="pull-right"></div>
+                        <div class="clearfix"></div>
+                        <p></p>
+                        <p class="marked"></p>
+                        <p></p>
+                        <br />
+                        <pre class="prettyprint language-html prettyprinted" data-type="delete"><code><span class="pln">/foods/{id}</span></code></pre>
+                        <p>
+                          <h3>Usage and SDK Samples</h3>
+                        </p>
+                        <ul class="nav nav-tabs nav-tabs-examples">
+                          <li class="active"><a href="#examples-Default-foodsIdDelete-0-curl">Curl</a></li>
+                          <li class=""><a href="#examples-Default-foodsIdDelete-0-java">Java</a></li>
+                          <li class=""><a href="#examples-Default-foodsIdDelete-0-android">Android</a></li>
+                          <!--<li class=""><a href="#examples-Default-foodsIdDelete-0-groovy">Groovy</a></li>-->
+                          <li class=""><a href="#examples-Default-foodsIdDelete-0-objc">Obj-C</a></li>
+                          <li class=""><a href="#examples-Default-foodsIdDelete-0-javascript">JavaScript</a></li>
+                          <!--<li class=""><a href="#examples-Default-foodsIdDelete-0-angular">Angular</a></li>-->
+                          <li class=""><a href="#examples-Default-foodsIdDelete-0-csharp">C#</a></li>
+                          <li class=""><a href="#examples-Default-foodsIdDelete-0-php">PHP</a></li>
+                          <li class=""><a href="#examples-Default-foodsIdDelete-0-perl">Perl</a></li>
+                          <li class=""><a href="#examples-Default-foodsIdDelete-0-python">Python</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                          <div class="tab-pane active" id="examples-Default-foodsIdDelete-0-curl">
+                           <pre class="prettyprint"><code class="language-bsh">curl -X DELETE\
+"//foods/{id}"</code></pre>
+                          </div>
+                          <div class="tab-pane" id="examples-Default-foodsIdDelete-0-java">
+                            <pre class="prettyprint"><code class="language-java">import io.swagger.client.*;
+import io.swagger.client.auth.*;
+import io.swagger.client.model.*;
+import io.swagger.client.api.DefaultApi;
+
+import java.io.File;
+import java.util.*;
+
+public class DefaultApiExample {
+
+    public static void main(String[] args) {
+        
+        DefaultApi apiInstance = new DefaultApi();
+         id = ; //  | 
+        try {
+            apiInstance.foodsIdDelete(id);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling DefaultApi#foodsIdDelete");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+
+                          <div class="tab-pane" id="examples-Default-foodsIdDelete-0-android">
+                            <pre class="prettyprint"><code class="language-java">import io.swagger.client.api.DefaultApi;
+
+public class DefaultApiExample {
+
+    public static void main(String[] args) {
+        DefaultApi apiInstance = new DefaultApi();
+         id = ; //  | 
+        try {
+            apiInstance.foodsIdDelete(id);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling DefaultApi#foodsIdDelete");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+  <!--
+  <div class="tab-pane" id="examples-Default-foodsIdDelete-0-groovy">
+  <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+  </div> -->
+                            <div class="tab-pane" id="examples-Default-foodsIdDelete-0-objc">
+                              <pre class="prettyprint"><code class="language-cpp"> *id = ; // 
+
+DefaultApi *apiInstance = [[DefaultApi alloc] init];
+
+[apiInstance foodsIdDeleteWith:id
+              completionHandler: ^(NSError* error) {
+                            if (error) {
+                                NSLog(@"Error: %@", error);
+                            }
+                        }];
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Default-foodsIdDelete-0-javascript">
+                              <pre class="prettyprint"><code class="language-js">var UntitledApi = require('untitled_api');
+
+var api = new UntitledApi.DefaultApi()
+var id = ; // {{}} 
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully.');
+  }
+};
+api.foodsIdDelete(id, callback);
+</code></pre>
+                            </div>
+
+                            <!--<div class="tab-pane" id="examples-Default-foodsIdDelete-0-angular">
+              <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+            </div>-->
+                            <div class="tab-pane" id="examples-Default-foodsIdDelete-0-csharp">
+                              <pre class="prettyprint"><code class="language-cs">using System;
+using System.Diagnostics;
+using IO.Swagger.Api;
+using IO.Swagger.Client;
+using IO.Swagger.Model;
+
+namespace Example
+{
+    public class foodsIdDeleteExample
+    {
+        public void main()
+        {
+
+            var apiInstance = new DefaultApi();
+            var id = new (); //  | 
+
+            try
+            {
+                apiInstance.foodsIdDelete(id);
+            }
+            catch (Exception e)
+            {
+                Debug.Print("Exception when calling DefaultApi.foodsIdDelete: " + e.Message );
+            }
+        }
+    }
+}
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Default-foodsIdDelete-0-php">
+                              <pre class="prettyprint"><code class="language-php"><&#63;php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+$api_instance = new Swagger\Client\ApiDefaultApi();
+$id = ; //  | 
+
+try {
+    $api_instance->foodsIdDelete($id);
+} catch (Exception $e) {
+    echo 'Exception when calling DefaultApi->foodsIdDelete: ', $e->getMessage(), PHP_EOL;
+}
+?></code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Default-foodsIdDelete-0-perl">
+                              <pre class="prettyprint"><code class="language-perl">use Data::Dumper;
+use WWW::SwaggerClient::Configuration;
+use WWW::SwaggerClient::DefaultApi;
+
+my $api_instance = WWW::SwaggerClient::DefaultApi->new();
+my $id = ; #  | 
+
+eval { 
+    $api_instance->foodsIdDelete(id => $id);
+};
+if ($@) {
+    warn "Exception when calling DefaultApi->foodsIdDelete: $@\n";
+}</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Default-foodsIdDelete-0-python">
+                              <pre class="prettyprint"><code class="language-python">from __future__ import print_statement
+import time
+import swagger_client
+from swagger_client.rest import ApiException
+from pprint import pprint
+
+# create an instance of the API class
+api_instance = swagger_client.DefaultApi()
+id =  #  | 
+
+try: 
+    api_instance.foods_id_delete(id)
+except ApiException as e:
+    print("Exception when calling DefaultApi->foodsIdDelete: %s\n" % e)</code></pre>
+                            </div>
+                          </div>
+
+                          <h2>Parameters</h2>
+
+                            <div class="methodsubtabletitle">Path parameters</div>
+                            <table id="methodsubtable">
+                                <tr>
+                                  <th width="150px">Name</th>
+                                  <th>Description</th>
+                                </tr>
+                                  <tr><td style="width:150px;">id*</td>
+                                  <td>
+                                  
+                                  
+                                      <div id="d2e199_foodsIdDelete_id">
+                                          <div class="json-schema-view">
+                                              <div class="primitive">
+                                                  <span class="type">
+                                                      
+                                                  </span>
+                                  
+                                              </div>
+                                                  <div class="inner required">
+                                                      Required
+                                                  </div>
+                                          </div>
+                                      </div>
+                                  </td>
+                                  </tr>
+                            </table>
 
 
 
@@ -1594,6 +1832,238 @@ except ApiException as e:
 
                           <h2>Parameters</h2>
 
+
+
+
+
+
+                          <h2>Responses</h2>
+                        </article>
+                      </div>
+                      <hr>
+                    <div id="api-Default-foodsnamenameGet">
+                      <article id="api-Default-foodsnamenameGet-0" data-group="User" data-name="foodsnamenameGet" data-version="0">
+                        <div class="pull-left">
+                          <h1>foodsnamenameGet</h1>
+                          <p></p>
+                        </div>
+                        <div class="pull-right"></div>
+                        <div class="clearfix"></div>
+                        <p></p>
+                        <p class="marked"></p>
+                        <p></p>
+                        <br />
+                        <pre class="prettyprint language-html prettyprinted" data-type="get"><code><span class="pln">/foods/?name&#x3D;{name}</span></code></pre>
+                        <p>
+                          <h3>Usage and SDK Samples</h3>
+                        </p>
+                        <ul class="nav nav-tabs nav-tabs-examples">
+                          <li class="active"><a href="#examples-Default-foodsnamenameGet-0-curl">Curl</a></li>
+                          <li class=""><a href="#examples-Default-foodsnamenameGet-0-java">Java</a></li>
+                          <li class=""><a href="#examples-Default-foodsnamenameGet-0-android">Android</a></li>
+                          <!--<li class=""><a href="#examples-Default-foodsnamenameGet-0-groovy">Groovy</a></li>-->
+                          <li class=""><a href="#examples-Default-foodsnamenameGet-0-objc">Obj-C</a></li>
+                          <li class=""><a href="#examples-Default-foodsnamenameGet-0-javascript">JavaScript</a></li>
+                          <!--<li class=""><a href="#examples-Default-foodsnamenameGet-0-angular">Angular</a></li>-->
+                          <li class=""><a href="#examples-Default-foodsnamenameGet-0-csharp">C#</a></li>
+                          <li class=""><a href="#examples-Default-foodsnamenameGet-0-php">PHP</a></li>
+                          <li class=""><a href="#examples-Default-foodsnamenameGet-0-perl">Perl</a></li>
+                          <li class=""><a href="#examples-Default-foodsnamenameGet-0-python">Python</a></li>
+                        </ul>
+
+                        <div class="tab-content">
+                          <div class="tab-pane active" id="examples-Default-foodsnamenameGet-0-curl">
+                           <pre class="prettyprint"><code class="language-bsh">curl -X GET\
+"//foods/?name&#x3D;{name}"</code></pre>
+                          </div>
+                          <div class="tab-pane" id="examples-Default-foodsnamenameGet-0-java">
+                            <pre class="prettyprint"><code class="language-java">import io.swagger.client.*;
+import io.swagger.client.auth.*;
+import io.swagger.client.model.*;
+import io.swagger.client.api.DefaultApi;
+
+import java.io.File;
+import java.util.*;
+
+public class DefaultApiExample {
+
+    public static void main(String[] args) {
+        
+        DefaultApi apiInstance = new DefaultApi();
+         name = ; //  | 
+        try {
+            apiInstance.foodsnamenameGet(name);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling DefaultApi#foodsnamenameGet");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+
+                          <div class="tab-pane" id="examples-Default-foodsnamenameGet-0-android">
+                            <pre class="prettyprint"><code class="language-java">import io.swagger.client.api.DefaultApi;
+
+public class DefaultApiExample {
+
+    public static void main(String[] args) {
+        DefaultApi apiInstance = new DefaultApi();
+         name = ; //  | 
+        try {
+            apiInstance.foodsnamenameGet(name);
+        } catch (ApiException e) {
+            System.err.println("Exception when calling DefaultApi#foodsnamenameGet");
+            e.printStackTrace();
+        }
+    }
+}</code></pre>
+                          </div>
+  <!--
+  <div class="tab-pane" id="examples-Default-foodsnamenameGet-0-groovy">
+  <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+  </div> -->
+                            <div class="tab-pane" id="examples-Default-foodsnamenameGet-0-objc">
+                              <pre class="prettyprint"><code class="language-cpp"> *name = ; // 
+
+DefaultApi *apiInstance = [[DefaultApi alloc] init];
+
+[apiInstance foodsnamenameGetWith:name
+              completionHandler: ^(NSError* error) {
+                            if (error) {
+                                NSLog(@"Error: %@", error);
+                            }
+                        }];
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Default-foodsnamenameGet-0-javascript">
+                              <pre class="prettyprint"><code class="language-js">var UntitledApi = require('untitled_api');
+
+var api = new UntitledApi.DefaultApi()
+var name = ; // {{}} 
+
+var callback = function(error, data, response) {
+  if (error) {
+    console.error(error);
+  } else {
+    console.log('API called successfully.');
+  }
+};
+api.foodsnamenameGet(name, callback);
+</code></pre>
+                            </div>
+
+                            <!--<div class="tab-pane" id="examples-Default-foodsnamenameGet-0-angular">
+              <pre class="prettyprint language-json prettyprinted" data-type="json"><code>Coming Soon!</code></pre>
+            </div>-->
+                            <div class="tab-pane" id="examples-Default-foodsnamenameGet-0-csharp">
+                              <pre class="prettyprint"><code class="language-cs">using System;
+using System.Diagnostics;
+using IO.Swagger.Api;
+using IO.Swagger.Client;
+using IO.Swagger.Model;
+
+namespace Example
+{
+    public class foodsnamenameGetExample
+    {
+        public void main()
+        {
+
+            var apiInstance = new DefaultApi();
+            var name = new (); //  | 
+
+            try
+            {
+                apiInstance.foodsnamenameGet(name);
+            }
+            catch (Exception e)
+            {
+                Debug.Print("Exception when calling DefaultApi.foodsnamenameGet: " + e.Message );
+            }
+        }
+    }
+}
+</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Default-foodsnamenameGet-0-php">
+                              <pre class="prettyprint"><code class="language-php"><&#63;php
+require_once(__DIR__ . '/vendor/autoload.php');
+
+$api_instance = new Swagger\Client\ApiDefaultApi();
+$name = ; //  | 
+
+try {
+    $api_instance->foodsnamenameGet($name);
+} catch (Exception $e) {
+    echo 'Exception when calling DefaultApi->foodsnamenameGet: ', $e->getMessage(), PHP_EOL;
+}
+?></code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Default-foodsnamenameGet-0-perl">
+                              <pre class="prettyprint"><code class="language-perl">use Data::Dumper;
+use WWW::SwaggerClient::Configuration;
+use WWW::SwaggerClient::DefaultApi;
+
+my $api_instance = WWW::SwaggerClient::DefaultApi->new();
+my $name = ; #  | 
+
+eval { 
+    $api_instance->foodsnamenameGet(name => $name);
+};
+if ($@) {
+    warn "Exception when calling DefaultApi->foodsnamenameGet: $@\n";
+}</code></pre>
+                            </div>
+
+                            <div class="tab-pane" id="examples-Default-foodsnamenameGet-0-python">
+                              <pre class="prettyprint"><code class="language-python">from __future__ import print_statement
+import time
+import swagger_client
+from swagger_client.rest import ApiException
+from pprint import pprint
+
+# create an instance of the API class
+api_instance = swagger_client.DefaultApi()
+name =  #  | 
+
+try: 
+    api_instance.foodsnamename_get(name)
+except ApiException as e:
+    print("Exception when calling DefaultApi->foodsnamenameGet: %s\n" % e)</code></pre>
+                            </div>
+                          </div>
+
+                          <h2>Parameters</h2>
+
+                            <div class="methodsubtabletitle">Path parameters</div>
+                            <table id="methodsubtable">
+                                <tr>
+                                  <th width="150px">Name</th>
+                                  <th>Description</th>
+                                </tr>
+                                  <tr><td style="width:150px;">name*</td>
+                                  <td>
+                                  
+                                  
+                                      <div id="d2e199_foodsnamenameGet_name">
+                                          <div class="json-schema-view">
+                                              <div class="primitive">
+                                                  <span class="type">
+                                                      
+                                                  </span>
+                                  
+                                              </div>
+                                                  <div class="inner required">
+                                                      Required
+                                                  </div>
+                                          </div>
+                                      </div>
+                                  </td>
+                                  </tr>
+                            </table>
 
 
 
