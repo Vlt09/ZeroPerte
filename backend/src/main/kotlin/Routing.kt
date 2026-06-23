@@ -126,7 +126,7 @@ fun Application.configureRouting() {
                             return@put
                         }
 
-                        call.respond(HttpStatusCode.Created, updatedFood.id)
+                        call.respond(HttpStatusCode.OK, updatedFood.id)
                         LOGGER.info("food with id $updatedFood.id has been updated : $foodDto")
 
 
@@ -148,8 +148,13 @@ fun Application.configureRouting() {
                     try {
                         val id = foodRepository.delete(idAsText.toLong())
 
+                        if (id == 0){
+                            call.respond(HttpStatusCode.NotFound)
+                            return@delete
+                        }
+
                         LOGGER.info("food has been deleted : $id")
-                        call.respond(id)
+                        call.respond(HttpStatusCode.NoContent)
 
                     }catch (ex: IllegalArgumentException) {
                         call.respond(HttpStatusCode.BadRequest)
@@ -160,12 +165,14 @@ fun Application.configureRouting() {
 
             get{
                 val foodsList = foodRepository.allFoods()
+
+                LOGGER.info("Get all foods : ${foodsList.size} has been found")
                 call.respond(
                     foodsList
                 )
             }
 
-            get("?name={name}") {
+            get("/name={name}") {
                 val foodEntityName = getParameterFromURL(call, "name") ?: return@get
 
                 try {
@@ -179,7 +186,7 @@ fun Application.configureRouting() {
                 }
             }
 
-            get("?category={category}") {
+            get("/category={category}") {
                 val foodEntityCategory = getParameterFromURL(call, "category") ?: return@get
 
                 try {
@@ -193,7 +200,7 @@ fun Application.configureRouting() {
                 }
             }
 
-            get("?brand={brand}") {
+            get("/brand={brand}") {
                 val foodEntityBrand = getParameterFromURL(call, "brand") ?: return@get
 
                 try {
@@ -207,7 +214,7 @@ fun Application.configureRouting() {
                 }
             }
 
-            get("?expired={expired}") {
+            get("/expired={expired}") {
                 val expiredBoolString = getParameterFromURL(call, "expired") ?: return@get
 
                 try {
@@ -221,7 +228,7 @@ fun Application.configureRouting() {
                 }
             }
 
-            get("?expired={expired}&days={days}") {
+            get("/expired={expired}&days={days}") {
                 val expiredBoolString = getParameterFromURL(call, "expired") ?: return@get
                 val days = getParameterFromURL(call, "days") ?: return@get
 
