@@ -228,7 +228,7 @@ fun Application.configureRouting() {
                 }
             }
 
-            get("/expired={expired}&days={days}") {
+            get("/expired={expired}/days={days}") {
                 val expiredBoolString = getParameterFromURL(call, "expired") ?: return@get
                 val days = getParameterFromURL(call, "days") ?: return@get
 

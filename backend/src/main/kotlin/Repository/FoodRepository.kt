@@ -9,13 +9,9 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
-import org.gradle.internal.impldep.com.google.api.client.util.DateTime
 import org.jetbrains.exposed.v1.core.Column
-import org.jetbrains.exposed.v1.core.Expression
-import org.jetbrains.exposed.v1.core.QueryBuilder
 import org.jetbrains.exposed.v1.core.ResultRow
 import org.jetbrains.exposed.v1.core.and
-import org.jetbrains.exposed.v1.core.append
 import org.jetbrains.exposed.v1.core.dao.id.LongIdTable
 import org.jetbrains.exposed.v1.core.eq
 import org.jetbrains.exposed.v1.core.greater
