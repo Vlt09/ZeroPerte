@@ -4,13 +4,24 @@ import io.ktor.util.logging.*
 import com.zeroperte.model.Food
 import com.zeroperte.model.FoodDto
 import com.zeroperte.model.FoodPostDto
-import kotlinx.coroutines.yield
+import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.plus
+import kotlinx.datetime.toLocalDateTime
+import org.gradle.internal.impldep.com.google.api.client.util.DateTime
 import org.jetbrains.exposed.v1.core.Column
+import org.jetbrains.exposed.v1.core.Expression
+import org.jetbrains.exposed.v1.core.QueryBuilder
 import org.jetbrains.exposed.v1.core.ResultRow
+import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.core.append
 import org.jetbrains.exposed.v1.core.dao.id.LongIdTable
 import org.jetbrains.exposed.v1.core.eq
-import org.jetbrains.exposed.v1.core.like
+import org.jetbrains.exposed.v1.core.greater
+import org.jetbrains.exposed.v1.core.greaterEq
+import org.jetbrains.exposed.v1.core.less
+import org.jetbrains.exposed.v1.core.lessEq
 import org.jetbrains.exposed.v1.datetime.*
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
@@ -18,7 +29,7 @@ import org.jetbrains.exposed.v1.jdbc.insertAndGetId
 import org.jetbrains.exposed.v1.jdbc.selectAll
 import org.jetbrains.exposed.v1.jdbc.transactions.transaction
 import org.jetbrains.exposed.v1.jdbc.update
-import kotlin.reflect.full.memberProperties
+import kotlin.time.Clock
 
 internal val LOGGER = KtorSimpleLogger("com.zeroperte.FoodRepositoryLogger")
 
@@ -45,6 +56,7 @@ internal object FoodTable : LongIdTable() {
             amount = row[amount]
         )
     }}
+
 
 class FoodRepository {
 
@@ -84,6 +96,31 @@ class FoodRepository {
         return transaction {
             FoodTable.selectAll().where{
                 FoodTable.brand eq brand}
+                .map { FoodTable.toDomain(it) }
+                .toList()
+        }
+    }
+
+    fun findExpired(expired: Boolean): List<Food> {
+        return transaction {
+            val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+            FoodTable.selectAll().where{
+                if (expired) FoodTable.expiryDate less today
+                else FoodTable.expiryDate greater today
+
+            }
+                .map { FoodTable.toDomain(it) }
+                .toList()
+        }
+    }
+
+    fun findExpiring(days: Int): List<Food> {
+        val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+        val limit = today.plus(days, DateTimeUnit.DAY)
+        return transaction {
+            FoodTable.selectAll().where {
+                (FoodTable.expiryDate greaterEq today) and  (FoodTable.expiryDate lessEq limit)
+            }
                 .map { FoodTable.toDomain(it) }
                 .toList()
         }

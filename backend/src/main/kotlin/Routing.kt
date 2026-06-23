@@ -183,7 +183,7 @@ fun Application.configureRouting() {
                 val foodEntityCategory = getParameterFromURL(call, "category") ?: return@get
 
                 try {
-                    val foodListByName = foodRepository.findByName(foodEntityCategory)
+                    val foodListByName = foodRepository.findByCategory(foodEntityCategory)
 
                     LOGGER.info("$foodEntityCategory has been found ${foodListByName.size}")
                     call.respond(foodListByName)
@@ -197,7 +197,7 @@ fun Application.configureRouting() {
                 val foodEntityBrand = getParameterFromURL(call, "brand") ?: return@get
 
                 try {
-                    val foodListByName = foodRepository.findByName(foodEntityBrand)
+                    val foodListByName = foodRepository.findByBrand(foodEntityBrand)
 
                     LOGGER.info("$foodEntityBrand has been found ${foodListByName.size}")
                     call.respond(foodListByName)
@@ -207,6 +207,40 @@ fun Application.configureRouting() {
                 }
             }
 
+            get("?expired={expired}") {
+                val expiredBoolString = getParameterFromURL(call, "expired") ?: return@get
+
+                try {
+                    val expired = expiredBoolString.toBoolean()
+                    val expiredFoodList = foodRepository.findExpired(expired)
+
+                    LOGGER.info("${expiredFoodList.size} expired food has been found")
+                    call.respond(expiredFoodList)
+                } catch (ex: IllegalArgumentException) {
+                    call.respond(HttpStatusCode.BadRequest)
+                }
+            }
+
+            get("?expired={expired}&days={days}") {
+                val expiredBoolString = getParameterFromURL(call, "expired") ?: return@get
+                val days = getParameterFromURL(call, "days") ?: return@get
+
+                try {
+                    val expired = expiredBoolString.toBoolean()
+                    if (!expired){
+                        LOGGER.warn("Expired days bool is false")
+                        return@get
+                    }
+
+                    val expiredFoodList = foodRepository.findExpiring(days.toInt())
+
+                    LOGGER.info("${expiredFoodList.size} expired food has been found")
+                    call.respond(expiredFoodList)
+
+                } catch (ex: IllegalArgumentException) {
+                    call.respond(HttpStatusCode.BadRequest)
+                }
+            }
 
             post{
                 val formContent = call.receiveParameters()
