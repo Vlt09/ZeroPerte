@@ -6,6 +6,7 @@ import com.zeroperte.model.FoodDto
 import com.zeroperte.model.FoodPostDto
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.plus
 import kotlinx.datetime.toLocalDateTime
@@ -18,8 +19,10 @@ import org.jetbrains.exposed.v1.core.greater
 import org.jetbrains.exposed.v1.core.greaterEq
 import org.jetbrains.exposed.v1.core.less
 import org.jetbrains.exposed.v1.core.lessEq
+import org.jetbrains.exposed.v1.core.like
 import org.jetbrains.exposed.v1.datetime.*
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
+import org.jetbrains.exposed.v1.jdbc.andWhere
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insertAndGetId
 import org.jetbrains.exposed.v1.jdbc.selectAll
@@ -162,6 +165,25 @@ class FoodRepository {
         }
         LOGGER.info("Id $id removed and $deletedRow row has been deleted")
         return deletedRow
+    }
+
+    fun findByMultipleFilter(params : Map<String, String>) : List<Food> {
+        val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+
+        val foodList = transaction {
+            val query = FoodTable.selectAll()
+            for ((key, value) in params) {
+                when (key) {
+                    "name" -> query.andWhere { FoodTable.name like "%$value%" }
+                    "brand" -> query.andWhere { FoodTable.brand like "%$value%" }
+                    "category" -> query.andWhere { FoodTable.category like "%$value%" }
+                    "expiryDate" -> query.andWhere { FoodTable.expiryDate greater today.plus(value.toInt(), DateTimeUnit.DAY) }
+                }
+            }
+            query.map { FoodTable.toDomain(it) }.toList()
+        }
+
+        return foodList
     }
 
 }

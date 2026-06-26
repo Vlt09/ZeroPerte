@@ -1,6 +1,7 @@
 package com.zeroperte
 
 import com.zeroperte.Repository.FoodRepository
+import com.zeroperte.Service.FoodService
 import com.zeroperte.model.Food
 import com.zeroperte.model.FoodDto
 import com.zeroperte.model.FoodPostDto
@@ -56,6 +57,7 @@ internal fun <T> formContentToFoodDto(formContent: Parameters, dtoConstructor: K
 
     return dtoConstructor.callBy(args)
 }
+
 private suspend fun getParameterFromURL(call: RoutingCall, parameterName: String): String?{
     val foodEntityProperty = call.parameters[parameterName]
 
@@ -69,18 +71,11 @@ private suspend fun getParameterFromURL(call: RoutingCall, parameterName: String
 
 fun Application.configureRouting() {
     val foodRepository by inject<FoodRepository>();
+    val foodService by inject<FoodService>()
 
     routing {
         staticResources("static", "static")
         staticResources("/zeroperte_ui", "zeroperte_ui")
-
-
-        get("/") {
-            call.respondText("Hello, World!")
-        }
-        get("/json/kotlinx-serialization") {
-            call.respond(mapOf("hello" to "world"))
-        }
 
         route("/foods"){
             route("/{id}") {
@@ -118,7 +113,7 @@ fun Application.configureRouting() {
                     try {
                         val constructor = FoodDto::class.primaryConstructor!!
 
-                        val foodDto = formContentToFoodDto<FoodDto>(formContent, constructor)
+                        val foodDto = formContentToFoodDto(formContent, constructor)
                         val updatedFood = foodRepository.update(idAsText.toLong(), foodDto)
 
                         if (updatedFood == null) {
@@ -160,93 +155,19 @@ fun Application.configureRouting() {
                         call.respond(HttpStatusCode.BadRequest)
                     }
                 }
-
             }
 
             get{
-                val foodsList = foodRepository.allFoods()
+                val params = foodService.getFilterParameterFromUrl(call)
+
+                LOGGER.info("getParameterFromUrl $params")
+
+                val foodsList = foodRepository.findByMultipleFilter(params)
 
                 LOGGER.info("Get all foods : ${foodsList.size} has been found")
                 call.respond(
                     foodsList
                 )
-            }
-
-            get("/name={name}") {
-                val foodEntityName = getParameterFromURL(call, "name") ?: return@get
-
-                try {
-                    val foodListByName = foodRepository.findByName(foodEntityName)
-
-                    LOGGER.info("$foodEntityName has been found ${foodListByName.size}")
-                    call.respond(foodListByName)
-
-                }catch (ex: IllegalArgumentException) {
-                    call.respond(HttpStatusCode.BadRequest)
-                }
-            }
-
-            get("/category={category}") {
-                val foodEntityCategory = getParameterFromURL(call, "category") ?: return@get
-
-                try {
-                    val foodListByName = foodRepository.findByCategory(foodEntityCategory)
-
-                    LOGGER.info("$foodEntityCategory has been found ${foodListByName.size}")
-                    call.respond(foodListByName)
-
-                }catch (ex: IllegalArgumentException) {
-                    call.respond(HttpStatusCode.BadRequest)
-                }
-            }
-
-            get("/brand={brand}") {
-                val foodEntityBrand = getParameterFromURL(call, "brand") ?: return@get
-
-                try {
-                    val foodListByName = foodRepository.findByBrand(foodEntityBrand)
-
-                    LOGGER.info("$foodEntityBrand has been found ${foodListByName.size}")
-                    call.respond(foodListByName)
-
-                }catch (ex: IllegalArgumentException) {
-                    call.respond(HttpStatusCode.BadRequest)
-                }
-            }
-
-            get("/expired={expired}") {
-                val expiredBoolString = getParameterFromURL(call, "expired") ?: return@get
-
-                try {
-                    val expired = expiredBoolString.toBoolean()
-                    val expiredFoodList = foodRepository.findExpired(expired)
-
-                    LOGGER.info("${expiredFoodList.size} expired food has been found")
-                    call.respond(expiredFoodList)
-                } catch (ex: IllegalArgumentException) {
-                    call.respond(HttpStatusCode.BadRequest)
-                }
-            }
-
-            get("/expired={expired}/days={days}") {
-                val expiredBoolString = getParameterFromURL(call, "expired") ?: return@get
-                val days = getParameterFromURL(call, "days") ?: return@get
-
-                try {
-                    val expired = expiredBoolString.toBoolean()
-                    if (!expired){
-                        LOGGER.warn("Expired days bool is false")
-                        return@get
-                    }
-
-                    val expiredFoodList = foodRepository.findExpiring(days.toInt())
-
-                    LOGGER.info("${expiredFoodList.size} expired food has been found")
-                    call.respond(expiredFoodList)
-
-                } catch (ex: IllegalArgumentException) {
-                    call.respond(HttpStatusCode.BadRequest)
-                }
             }
 
             post{

@@ -259,4 +259,88 @@ class FoodRepositoryTest {
 
         assertTrue(result.isEmpty())
     }
+
+    // == findByMultipleFilter ==
+
+    @Test
+    fun `findByMultipleFilter should find by name`() {
+        repository.create(sampleFoodPostDto())
+
+        val result = repository.findByMultipleFilter(
+            mapOf("name" to "Yaourt")
+        )
+
+        assertEquals(1, result.size)
+        assertEquals("Yaourt", result.first().name)
+    }
+
+    @Test
+    fun `findByMultipleFilter should find by brand`() {
+        repository.create(sampleFoodPostDto())
+
+        val result = repository.findByMultipleFilter(
+            mapOf("brand" to "Danone")
+        )
+
+        assertEquals(1, result.size)
+        assertEquals("Danone", result.first().brand)
+    }
+
+    @Test
+    fun `findByMultipleFilter should find by category`() {
+        repository.create(sampleFoodPostDto())
+
+        val result = repository.findByMultipleFilter(
+            mapOf("category" to "Produit laitier")
+        )
+
+        assertEquals(1, result.size)
+    }
+
+    @Test
+    fun `findByMultipleFilter should combine filters`() {
+        repository.create(sampleFoodPostDto("Ble"))
+        repository.create(sampleFoodPostDto())
+
+
+        val result = repository.findByMultipleFilter(
+            mapOf(
+                "brand" to "Danone",
+                "name" to "Yaourt"
+            )
+        )
+
+        assertEquals(1, result.size)
+        assertEquals("Yaourt", result.first().name)
+    }
+
+    @Test
+    fun `findByMultipleFilter should return empty list`() {
+        repository.create(sampleFoodPostDto())
+
+        val result = repository.findByMultipleFilter(
+            mapOf("brand" to "Unknown")
+        )
+
+        assertTrue(result.isEmpty())
+    }
+
+    @Test
+    fun `findByMultipleFilter should filter by expiryDate`() {
+        val today = kotlinx.datetime.Clock.System.now()
+            .toLocalDateTime(kotlinx.datetime.TimeZone.currentSystemDefault()).date
+        val inThreeDays = today.plus(3, kotlinx.datetime.DateTimeUnit.DAY)
+        val inTenDays = today.plus(10, kotlinx.datetime.DateTimeUnit.DAY)
+
+        repository.create(sampleFoodPostDto().copy(expiryDate = inThreeDays))
+
+
+        val result = repository.findByMultipleFilter(
+            mapOf("expiryDate" to "3")
+        )
+
+        assertTrue(result.all {
+            it.expiryDate > today
+        })
+    }
 }

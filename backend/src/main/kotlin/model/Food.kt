@@ -25,21 +25,3 @@ data class Food(
         )
     }
 }
-
-
-
-fun Food.foodAsRow() = """
-    <tr>
-        <td>$name</td><td>$brand</td><td>$category</td>
-        <td>$datePurchased</td>
-    </tr>
-""".trimIndent()
-
-
-fun List<Food>.foodAsTable() = this.joinToString(
-    prefix = "<table rules=\"all\">",
-    postfix = "</table>",
-    separator = "\n",
-    transform = Food::foodAsRow
-)
-
