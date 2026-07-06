@@ -20,6 +20,7 @@ import org.jetbrains.exposed.v1.core.greaterEq
 import org.jetbrains.exposed.v1.core.less
 import org.jetbrains.exposed.v1.core.lessEq
 import org.jetbrains.exposed.v1.core.like
+import org.jetbrains.exposed.v1.core.or
 import org.jetbrains.exposed.v1.datetime.*
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
 import org.jetbrains.exposed.v1.jdbc.andWhere
@@ -170,6 +171,9 @@ class FoodRepository {
     fun findByMultipleFilter(params : Map<String, String>) : List<Food> {
         val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
 
+        // Get days parameters in case of expiryDate is filter key
+        val days = params.getValue("days").toInt()
+
         val foodList = transaction {
             val query = FoodTable.selectAll()
             for ((key, value) in params) {
@@ -177,7 +181,17 @@ class FoodRepository {
                     "name" -> query.andWhere { FoodTable.name like "%$value%" }
                     "brand" -> query.andWhere { FoodTable.brand like "%$value%" }
                     "category" -> query.andWhere { FoodTable.category like "%$value%" }
-                    "expiryDate" -> query.andWhere { FoodTable.expiryDate greater today.plus(value.toInt(), DateTimeUnit.DAY) }
+                    "expiryDate" -> query.andWhere {
+                        if (value == "true"){
+                            FoodTable.expiryDate lessEq
+                                    today.plus(days, DateTimeUnit.DAY)
+                        }
+                        else{
+                            FoodTable.expiryDate greater
+                                    today.plus(days, DateTimeUnit.DAY)
+                        }
+                    }
+
                 }
             }
             query.map { FoodTable.toDomain(it) }.toList()

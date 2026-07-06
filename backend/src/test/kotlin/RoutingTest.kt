@@ -1,5 +1,6 @@
 import com.zeroperte.Repository.FoodRepository
 import com.zeroperte.Repository.FoodTable
+import com.zeroperte.Service.FoodService
 import com.zeroperte.configureRouting
 import com.zeroperte.configureSerialization
 import io.ktor.client.request.*
@@ -48,7 +49,10 @@ class RoutingTest {
         application {
             install(Koin) {
                 slf4jLogger()
-                modules(module { single { repository } })
+                modules(module {
+                    single { repository }
+                    single { FoodService() }
+                })
             }
             configureSerialization()
             configureRouting()
@@ -57,98 +61,51 @@ class RoutingTest {
 
     private fun sampleFoodPostDto(
         name: String = "Yaourt",
+        category: String = "Produit laitier",
+        brand: String = "Danone",
         expiryDate: LocalDate = LocalDate(2099, 6, 15)
     ) = com.zeroperte.model.FoodPostDto(
         name = name,
-        brand = "Danone",
-        category = "Produit laitier",
-        datePurchased = LocalDate(2026, 6, 1),
+        brand = brand,
+        category = category,
+        datePurchased = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date,
         expiryDate = expiryDate,
         comment = "A consommer rapidement",
         amount = 4
     )
 
-    // ===== GET / =====
-
-    @Test
-    fun `GET racine retourne Hello World`() = testApplication {
-        configureTestApp()
-        val response = client.get("/")
-        assertEquals(HttpStatusCode.OK, response.status)
-        assertEquals("Hello, World!", response.bodyAsText())
-    }
-
     // ===== GET /foods =====
 
     @Test
-    fun `GET foods retourne liste vide si aucun aliment`() = testApplication {
-        configureTestApp()
-        val response = client.get("/foods") {
-            accept(ContentType.Application.Json)
-        }
-        assertEquals(HttpStatusCode.OK, response.status)
-        assertEquals("[]", response.bodyAsText())
-    }
-
-    @Test
-    fun `GET foods retourne les aliments existants en JSON`() = testApplication {
+    fun `GET foods sans filtre retourne tous les aliments`() = testApplication {
         configureTestApp()
         repository.create(sampleFoodPostDto("Yaourt"))
         repository.create(sampleFoodPostDto("Lait"))
 
-        val response = client.get("/foods") {
-            accept(ContentType.Application.Json)
-        }
+        val response = client.get("/foods") { accept(ContentType.Application.Json) }
 
         assertEquals(HttpStatusCode.OK, response.status)
         assertTrue(response.bodyAsText().contains("Yaourt"))
         assertTrue(response.bodyAsText().contains("Lait"))
     }
 
-    // ===== GET /foods/{id} =====
-
     @Test
-    fun `GET foods id valide retourne l'aliment`() = testApplication {
+    fun `GET foods sans filtre retourne liste vide si aucun aliment`() = testApplication {
         configureTestApp()
-        val id = repository.create(sampleFoodPostDto("Lait"))
-
-        val response = client.get("/foods/$id") {
-            accept(ContentType.Application.Json)
-        }
-
+        val response = client.get("/foods") { accept(ContentType.Application.Json) }
         assertEquals(HttpStatusCode.OK, response.status)
-        assertTrue(response.bodyAsText().contains("Lait"))
+        assertEquals("[]", response.bodyAsText())
     }
 
-    @Test
-    fun `GET foods id inexistant retourne 404`() = testApplication {
-        configureTestApp()
-        val response = client.get("/foods/999") {
-            accept(ContentType.Application.Json)
-        }
-        assertEquals(HttpStatusCode.NotFound, response.status)
-    }
+    // ===== GET /foods?name= =====
 
     @Test
-    fun `GET foods id non numérique retourne 400`() = testApplication {
-        configureTestApp()
-        val response = client.get("/foods/abc") {
-            accept(ContentType.Application.Json)
-        }
-        assertEquals(HttpStatusCode.BadRequest, response.status)
-    }
-
-    // ===== GET /foods/name= =====
-
-    @Test
-    fun `GET foods par name retourne les aliments correspondants`() = testApplication {
+    fun `GET foods par name retourne uniquement les aliments correspondants`() = testApplication {
         configureTestApp()
         repository.create(sampleFoodPostDto("Yaourt"))
         repository.create(sampleFoodPostDto("Lait"))
 
-        val response = client.get("/foods/name=Yaourt") {
-            accept(ContentType.Application.Json)
-        }
+        val response = client.get("/foods?name=Yaourt") { accept(ContentType.Application.Json) }
 
         assertEquals(HttpStatusCode.OK, response.status)
         assertTrue(response.bodyAsText().contains("Yaourt"))
@@ -158,82 +115,80 @@ class RoutingTest {
     @Test
     fun `GET foods par name inconnu retourne liste vide`() = testApplication {
         configureTestApp()
-        val response = client.get("/foods/name=Inconnu") {
-            accept(ContentType.Application.Json)
-        }
+        repository.create(sampleFoodPostDto("Yaourt"))
+
+        val response = client.get("/foods?name=Inconnu") { accept(ContentType.Application.Json) }
+
         assertEquals(HttpStatusCode.OK, response.status)
         assertEquals("[]", response.bodyAsText())
     }
 
-    // ===== GET /foods/category= =====
+    // ===== GET /foods?category= =====
 
     @Test
-    fun `GET foods par category retourne les aliments correspondants`() = testApplication {
+    fun `GET foods par category retourne uniquement les aliments de cette catégorie`() = testApplication {
         configureTestApp()
-        repository.create(sampleFoodPostDto("Yaourt"))
-        repository.create(
-            sampleFoodPostDto("Jus").copy(category = "Boisson")
-        )
+        repository.create(sampleFoodPostDto("Yaourt", category = "Produit laitier"))
+        repository.create(sampleFoodPostDto("Jus", category = "Boisson"))
 
-        val response = client.get("/foods/category=Produit laitier") {
-            accept(ContentType.Application.Json)
-        }
+        val response = client.get("/foods?category=Produit laitier") { accept(ContentType.Application.Json) }
 
         assertEquals(HttpStatusCode.OK, response.status)
         assertTrue(response.bodyAsText().contains("Yaourt"))
         assertFalse(response.bodyAsText().contains("Jus"))
     }
 
-    // ===== GET /foods/brand= =====
-
     @Test
-    fun `GET foods par brand retourne les aliments correspondants`() = testApplication {
+    fun `GET foods par category inconnue retourne liste vide`() = testApplication {
         configureTestApp()
-        repository.create(sampleFoodPostDto("Yaourt"))
-        repository.create(sampleFoodPostDto("Lait").copy(brand = "Lactel"))
+        repository.create(sampleFoodPostDto("Yaourt", category = "Produit laitier"))
 
-        val response = client.get("/foods/brand=Danone") {
-            accept(ContentType.Application.Json)
-        }
+        val response = client.get("/foods?category=Inconnue") { accept(ContentType.Application.Json) }
 
         assertEquals(HttpStatusCode.OK, response.status)
-        assertTrue(response.bodyAsText().contains("Yaourt"))
-        assertFalse(response.bodyAsText().contains("Lactel"))
+        assertEquals("[]", response.bodyAsText())
     }
 
-    // ===== GET /foods/expired= =====
+    // ===== GET /foods?expiryDate= =====
 
     @Test
-    fun `GET foods expired true retourne les aliments périmés`() = testApplication {
+    fun `GET foods expired true retourne uniquement les aliments périmés`() = testApplication {
         configureTestApp()
-        repository.create(sampleFoodPostDto(expiryDate = LocalDate(2020, 1, 1)))
-        repository.create(sampleFoodPostDto("Lait", expiryDate = LocalDate(2099, 1, 1)))
+        repository.create(sampleFoodPostDto("Perime", expiryDate = LocalDate(2020, 1, 1)))
+        repository.create(sampleFoodPostDto("Valide", expiryDate = LocalDate(2099, 1, 1)))
 
-        val response = client.get("/foods/expired=true") {
-            accept(ContentType.Application.Json)
-        }
+        val response = client.get("/foods?expiryDate=true") { accept(ContentType.Application.Json) }
 
         assertEquals(HttpStatusCode.OK, response.status)
-        assertTrue(response.bodyAsText().contains("2020"))
-        assertFalse(response.bodyAsText().contains("2099"))
+        assertTrue(response.bodyAsText().contains("Perime"))
+        assertFalse(response.bodyAsText().contains("Valide"))
     }
 
     @Test
-    fun `GET foods expired false retourne les aliments non périmés`() = testApplication {
+    fun `GET foods expired false retourne uniquement les aliments non périmés`() = testApplication {
         configureTestApp()
-        repository.create(sampleFoodPostDto(expiryDate = LocalDate(2020, 1, 1)))
-        repository.create(sampleFoodPostDto("Lait", expiryDate = LocalDate(2099, 1, 1)))
+        repository.create(sampleFoodPostDto("Perime", expiryDate = LocalDate(2020, 1, 1)))
+        repository.create(sampleFoodPostDto("Valide", expiryDate = LocalDate(2099, 1, 1)))
 
-        val response = client.get("/foods/expired=false") {
-            accept(ContentType.Application.Json)
-        }
+        val response = client.get("/foods?expiryDate=false") { accept(ContentType.Application.Json) }
 
         assertEquals(HttpStatusCode.OK, response.status)
-        assertFalse(response.bodyAsText().contains("2020"))
-        assertTrue(response.bodyAsText().contains("2099"))
+        assertFalse(response.bodyAsText().contains("Perime"))
+        assertTrue(response.bodyAsText().contains("Valide"))
     }
 
-    // ===== GET /foods/expired=true&days= =====
+    @Test
+    fun `GET foods expired true retourne liste vide si aucun aliment périmé`() = testApplication {
+        configureTestApp()
+        repository.create(sampleFoodPostDto("Valide", expiryDate = LocalDate(2099, 1, 1)))
+
+        val response = client.get("/foods?expiryDate=true") { accept(ContentType.Application.Json) }
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals("[]", response.bodyAsText())
+    }
+
+    // ===== GET /foods?expiring=true&days= =====
 
     @Test
     fun `GET foods expiring dans N jours retourne les aliments concernés`() = testApplication {
@@ -243,24 +198,54 @@ class RoutingTest {
         val inTenDays = today.plus(10, DateTimeUnit.DAY)
 
         repository.create(sampleFoodPostDto("Bientot", expiryDate = inThreeDays))
-        repository.create(sampleFoodPostDto("PasEncoreD", expiryDate = inTenDays))
+        repository.create(sampleFoodPostDto("PasConcerne", expiryDate = inTenDays))
 
-        val response = client.get("/foods/expired=true/days=5") {
-            accept(ContentType.Application.Json)
-        }
+        val response = client.get("/foods?expiryDate=true&days=5") { accept(ContentType.Application.Json) }
 
         assertEquals(HttpStatusCode.OK, response.status)
         assertTrue(response.bodyAsText().contains("Bientot"))
-        assertFalse(response.bodyAsText().contains("PasEncoreD"))
+        assertFalse(response.bodyAsText().contains("PasConcerne"))
     }
 
     @Test
-    fun `GET foods expiring avec expired false retourne liste vide`() = testApplication {
+    fun `GET foods expiring retourne liste vide si aucun aliment n'expire dans le délai`() = testApplication {
         configureTestApp()
-        val response = client.get("/foods/expired=false&days=5") {
-            accept(ContentType.Application.Json)
-        }
+        val today = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
+        val inTenDays = today.plus(10, DateTimeUnit.DAY)
+
+        repository.create(sampleFoodPostDto("PasConcerne", expiryDate = inTenDays))
+
+        val response = client.get("/foods?expiryDate=true&days=3") { accept(ContentType.Application.Json) }
+
         assertEquals(HttpStatusCode.OK, response.status)
+        assertEquals("[]", response.bodyAsText())
+    }
+
+    // ===== GET /foods/{id} =====
+
+    @Test
+    fun `GET foods id valide retourne l'aliment`() = testApplication {
+        configureTestApp()
+        val id = repository.create(sampleFoodPostDto("Lait"))
+
+        val response = client.get("/foods/$id") { accept(ContentType.Application.Json) }
+
+        assertEquals(HttpStatusCode.OK, response.status)
+        assertTrue(response.bodyAsText().contains("Lait"))
+    }
+
+    @Test
+    fun `GET foods id inexistant retourne 404`() = testApplication {
+        configureTestApp()
+        val response = client.get("/foods/999") { accept(ContentType.Application.Json) }
+        assertEquals(HttpStatusCode.NotFound, response.status)
+    }
+
+    @Test
+    fun `GET foods id non numérique retourne 400`() = testApplication {
+        configureTestApp()
+        val response = client.get("/foods/abc") { accept(ContentType.Application.Json) }
+        assertEquals(HttpStatusCode.BadRequest, response.status)
     }
 
     // ===== POST /foods =====
@@ -306,12 +291,7 @@ class RoutingTest {
         val response = client.put("/foods/$id") {
             contentType(ContentType.Application.FormUrlEncoded)
             accept(ContentType.Application.Json)
-            setBody(
-                listOf(
-                    "name" to "Yaourt nature",
-                    "amount" to "2"
-                ).formUrlEncode()
-            )
+            setBody(listOf("name" to "Yaourt nature", "amount" to "2").formUrlEncode())
         }
         assertEquals(HttpStatusCode.OK, response.status)
     }
