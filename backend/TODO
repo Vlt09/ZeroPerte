@@ -1,2 +1,0 @@
-FoodRepository et Routing :
-- Générifier findBy et refactor la route get(?name=name) get(?category=category)
