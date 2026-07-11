@@ -1,13 +1,21 @@
 package com.vlt.zeroperte.model
 
-import kotlinx.serialization.Serializable
+import androidx.room.ColumnInfo
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 
-@Serializable
+@Entity
 data class Food(
-    val id: Long, val name: String, val brand: String?, val category: String?,
-    val datePurchased: LocalDate?, val expiryDate: LocalDate, val comment: String?, val amount: Int
+    @PrimaryKey val id: Long,
+    @ColumnInfo(name = "name") val name: String,
+    @ColumnInfo(name = "brand") val brand: String?,
+    @ColumnInfo(name = "category") val category: String?,
+    @ColumnInfo(name = "datePurchased") val datePurchased: LocalDate?,
+    @ColumnInfo(name = "expiryDate") val expiryDate: LocalDate,
+    @ColumnInfo(name = "comment") val comment: String?,
+    @ColumnInfo(name = "amount") val amount: Int
 ) {
     companion object {
         fun getMemberPropertiesString() : List<String> {
