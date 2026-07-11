@@ -1,8 +1,8 @@
 package com.vlt.zeroperte.model
 
 import kotlinx.serialization.Serializable
+import java.text.SimpleDateFormat
 import java.time.LocalDate
-import kotlin.reflect.full.declaredMemberProperties
 
 @Serializable
 data class Food(
@@ -11,15 +11,18 @@ data class Food(
 ) {
     companion object {
         fun getMemberPropertiesString() : List<String> {
-            return Food::class.declaredMemberProperties.map { p -> p.name }.toList()
+            return listOf("id", "name", "brand", "category", "datePurchased", "expiryDate",
+                "comment", "amount")
         }
+
+        internal val formatter = SimpleDateFormat("yyyy-MM-dd")
 
         val converters: Map<String, (String) -> Any?> = mapOf(
             "name" to { s: String -> s },
             "brand" to { s: String -> s },
             "category" to { s: String -> s },
-            "datePurchased" to { s: String -> if (s == "") null else LocalDate.parse(s) },
-            "expiryDate" to { s: String -> if (s == "") null else LocalDate.parse(s) },
+            "datePurchased" to { s: String -> if (s == "") null else formatter.parse(s) },
+            "expiryDate" to { s: String -> if (s == "") null else formatter.parse(s) },
             "comment" to { s: String -> s },
             "amount" to { s: String -> if (s == "") null else s.toInt() }
         )
