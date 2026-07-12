@@ -6,6 +6,6 @@ import com.vlt.zeroperte.data.model.Food
 import com.vlt.zeroperte.data.model.FoodDao
 
 @Database(entities = [Food::class], version = 1)
-abstract class Database : RoomDatabase() {
+abstract class AppDatabase : RoomDatabase() {
     abstract fun foodDao(): FoodDao
 }
