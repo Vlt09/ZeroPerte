@@ -1,11 +1,10 @@
-package com.vlt.zeroperte.model
+package com.vlt.zeroperte.data.model
 
 import androidx.room.Dao
 import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
-import java.time.LocalDate
 
 @Dao
 interface FoodDao {

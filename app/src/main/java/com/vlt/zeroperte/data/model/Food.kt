@@ -1,4 +1,4 @@
-package com.vlt.zeroperte.model
+package com.vlt.zeroperte.data.model
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
