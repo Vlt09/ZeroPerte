@@ -8,7 +8,7 @@ import java.time.LocalDate
 
 @Entity
 data class Food(
-    @PrimaryKey val id: Long,
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
     @ColumnInfo(name = "name") val name: String,
     @ColumnInfo(name = "brand") val brand: String?,
     @ColumnInfo(name = "category") val category: String?,

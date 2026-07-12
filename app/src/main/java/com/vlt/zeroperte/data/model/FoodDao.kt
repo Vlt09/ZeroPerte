@@ -21,7 +21,7 @@ interface FoodDao {
     @Query("SELECT * FROM food WHERE brand = :brand")
     fun findByBrand(brand: String): List<Food>
 
-    @Query("SELECT * FROM food WHERE expiryDate >= date()")
+    @Query("SELECT * FROM food WHERE expiryDate <= date()")
     fun findExpired() : List<Food>
 
     @Query("SELECT * FROM food WHERE expiryDate >= date('now')" +
