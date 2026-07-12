@@ -120,14 +120,14 @@ class FoodDaoTest {
     }
 
     @Test
-    fun findExpired_currentBehavior_returnsNonExpiredFoods() {
+    fun findExpired_currentBehavior_returnsExpiredFoods() {
         dao.insert(sampleFood(name = "Perime", expiryDate = LocalDate.now().minusDays(3)))
         dao.insert(sampleFood(name = "Valide", expiryDate = LocalDate.now().plusDays(3)))
 
         val results = dao.findExpired()
 
         assertEquals(1, results.size)
-        assertEquals("Valide", results.first().name)
+        assertEquals("Perime", results.first().name)
     }
 
     @Test
