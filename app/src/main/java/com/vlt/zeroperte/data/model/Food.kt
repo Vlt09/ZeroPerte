@@ -15,7 +15,7 @@ data class Food(
     @ColumnInfo(name = "datePurchased") val datePurchased: LocalDate?,
     @ColumnInfo(name = "expiryDate") val expiryDate: LocalDate,
     @ColumnInfo(name = "comment") val comment: String?,
-    @ColumnInfo(name = "amount") val amount: Int
+    @ColumnInfo(name = "amount") val amount: Int?
 ) {
     companion object {
         fun getMemberPropertiesString() : List<String> {
@@ -34,6 +34,7 @@ data class Food(
             "comment" to { s: String -> s },
             "amount" to { s: String -> if (s == "") null else s.toInt() }
         )
+
     }
 }
 
