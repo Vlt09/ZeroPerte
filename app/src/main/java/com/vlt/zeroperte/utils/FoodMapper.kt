@@ -1,7 +1,9 @@
 package com.vlt.zeroperte.utils
 
+import com.vlt.zeroperte.business.FoodStatusCalculator
 import com.vlt.zeroperte.data.model.Food
 import com.vlt.zeroperte.data.model.FoodDto
+import com.vlt.zeroperte.data.model.FoodListViewModelDto
 
 object FoodMapper {
 
@@ -19,6 +21,12 @@ object FoodMapper {
         return Food(name = foodDto.name, brand = foodDto.brand, category = foodDto.category,
             datePurchased = foodDto.datePurchased, expiryDate = foodDto.expiryDate,
             comment = foodDto.comment, amount = foodDto.amount)
+    }
+
+    fun toFoodListViewModelDto(food: Food) : FoodListViewModelDto{
+        return FoodListViewModelDto(food.name, food.brand, food.category, food.datePurchased,
+            food.expiryDate, food.comment, food.amount,
+            FoodStatusCalculator.fromExpiryDate(food.expiryDate))
     }
 
 

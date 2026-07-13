@@ -7,6 +7,8 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.vlt.zeroperte.data.model.Food
 import com.vlt.zeroperte.data.model.FoodDao
 import com.vlt.zeroperte.data.source.AppDatabase
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -56,11 +58,11 @@ class FoodDaoTest {
     )
 
     @Test
-    fun insert_and_findById_returnsInsertedFood() {
+    fun insert_and_findById_returnsInsertedFood() = runTest {
         val food = sampleFood(name = "Lait")
         dao.insert(food)
 
-        val all = dao.allFoods()
+        val all = dao.allFoods().first()
         assertEquals(1, all.size)
 
         val inserted = all.first()
@@ -142,30 +144,40 @@ class FoodDaoTest {
     }
 
     @Test
-    fun allFoods_returnsEverythingInserted() {
+    fun allFoods_returnsEverythingInserted() = runTest {
         dao.insert(sampleFood(name = "A"))
         dao.insert(sampleFood(name = "B"))
         dao.insert(sampleFood(name = "C"))
 
-        val results = dao.allFoods()
+        val results = dao.allFoods().first()
 
         assertEquals(3, results.size)
     }
 
     @Test
-    fun delete_removesFood() {
-        dao.insert(sampleFood(name = "AEffacer"))
-        val inserted = dao.allFoods().first()
+    fun allFoods_emitsNewValue_afterInsert() = runTest {
+        dao.insert(sampleFood(name = "Initial"))
+        assertEquals(1, dao.allFoods().first().size)
 
-        dao.delete(inserted)
+        dao.insert(sampleFood(name = "Ajoute"))
 
-        assertTrue(dao.allFoods().isEmpty())
+        assertEquals(2, dao.allFoods().first().size)
     }
 
     @Test
-    fun update_modifiesExistingFood() {
+    fun delete_removesFood() = runTest {
+        dao.insert(sampleFood(name = "AEffacer"))
+        val inserted = dao.allFoods().first().first()
+
+        dao.delete(inserted)
+
+        assertTrue(dao.allFoods().first().isEmpty())
+    }
+
+    @Test
+    fun update_modifiesExistingFood() = runTest {
         dao.insert(sampleFood(name = "AvantMaj", amount = 2))
-        val inserted = dao.allFoods().first()
+        val inserted = dao.allFoods().first().first()
 
         val updated = inserted.copy(amount = 10)
         dao.update(updated)
@@ -173,4 +185,5 @@ class FoodDaoTest {
         val result = dao.findById(inserted.id)
         assertEquals(10, result?.amount)
     }
+
 }

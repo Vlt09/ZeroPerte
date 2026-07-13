@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
+import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface FoodDao {
@@ -29,7 +30,7 @@ interface FoodDao {
     fun findExpiringSinceDays(days: Int) : List<Food>
 
     @Query("SELECT * FROM food")
-    fun allFoods(): List<Food>
+    fun allFoods(): Flow<List<Food>>
 
     @Insert
     fun insert(food: Food)

@@ -14,7 +14,7 @@ import javax.inject.Inject
 class FoodRepository @Inject constructor(
     private val foodDao: FoodDao
 ) {
-    suspend fun getAllFoods() = foodDao.allFoods()
+    fun getAllFoods() = foodDao.allFoods()
 
     suspend fun getFoodExpired() = foodDao.findExpired()
 
