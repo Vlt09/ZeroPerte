@@ -5,13 +5,17 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.vlt.zeroperte.ui.theme.ZeroPerteTheme
+import com.vlt.zeroperte.ui.FoodCreateUpdateScreen
+import com.vlt.zeroperte.ui.FoodDetailScreen
+import com.vlt.zeroperte.ui.foodListScreen
+import com.vlt.zeroperte.ui.Screen
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -20,30 +24,35 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
+            val navController = rememberNavController()
             ZeroPerteTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+
+                Surface(modifier = Modifier.fillMaxSize(),
+                        color = MaterialTheme.colorScheme.background)
+                {
+                    NavHost(
+                        navController = navController,
+                        startDestination = Screen.FoodList.route
+                    ){
+                        composable(Screen.FoodList.route){
+                            foodListScreen(modifier = Modifier.fillMaxSize())
+                        }
+                        composable(Screen.FoodDetail.route){backStackEntry ->
+                            val foodId = backStackEntry.arguments?.getString("foodId")
+                            FoodDetailScreen(navController, foodId)
+                        }
+                        composable(Screen.FoodCreateUpdate.route){backStackEntry ->
+                            val foodId = backStackEntry.arguments?.getString("foodId")
+                            FoodCreateUpdateScreen(navController, foodId)
+                        }
+                        composable(Screen.Parameters.route){}
+
+                    }
+
                 }
+
             }
+
         }
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    ZeroPerteTheme {
-        Greeting("Android")
     }
 }
