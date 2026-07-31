@@ -27,6 +27,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -37,6 +38,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.vlt.zeroperte.ui.theme.onBackgroundLight
 import com.vlt.zeroperte.ui.theme.onSurfaceVariantLight
+import java.util.Date
+
+
+data class FoodCardItem(val foodName : String,
+                        val remainingDay : Int,
+                        val expiryDate : Date,
+                        val foodPhoto : ImageVector
+                        )
 
 @Composable
 fun foodListScreen(
@@ -101,7 +110,7 @@ internal fun EmptyFoodItem(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun AddFoodFab() {
+internal fun AddFoodFab() {
     Scaffold(
     floatingActionButton = {
         FloatingActionButton(
@@ -121,7 +130,7 @@ fun AddFoodFab() {
 }
 
 @Composable
-fun FoodHeader(modifier: Modifier = Modifier) {
+internal fun FoodHeader(modifier: Modifier = Modifier) {
     Text(
         text = "Aliments",
         style = MaterialTheme.typography.headlineMedium,
@@ -134,35 +143,22 @@ fun FoodHeader(modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun FoodCard() {
-    Box(
+internal fun FoodCard() {
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+        ),
         modifier = Modifier
-            .fillMaxSize(),
-        contentAlignment = Alignment.Center
+            .size(width = 240.dp, height = 100.dp)
     ) {
-        Card(
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.surfaceVariant,
-            ),
+
+        Text(
+            text = "Filled",
             modifier = Modifier
-                .size(width = 240.dp, height = 100.dp)
-        ) {
-            Text(
-                text = "Filled",
-                modifier = Modifier
-                    .padding(16.dp),
-                textAlign = TextAlign.Center,
-            )
+                .padding(16.dp),
+            textAlign = TextAlign.Center,
+        )
 
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                ),
-                modifier = Modifier
-                    .size(width = 120.dp, height = 50.dp)
-            ) {}
-
-        }
 
     }
 }
