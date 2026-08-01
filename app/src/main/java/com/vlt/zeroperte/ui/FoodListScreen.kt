@@ -1,5 +1,6 @@
 package com.vlt.zeroperte.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,7 +19,9 @@ import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.NoFood
+import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -27,10 +30,15 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -41,10 +49,10 @@ import com.vlt.zeroperte.ui.theme.onSurfaceVariantLight
 import java.util.Date
 
 
-data class FoodCardItem(val foodName : String,
-                        val remainingDay : Int,
+data class FoodCardItem(val foodName : String = "Name",
+                        val remainingDay : Int = 0,
                         val expiryDate : Date,
-                        val foodPhoto : ImageVector
+                        val foodPhoto : ImageVector?
                         )
 
 @Composable
@@ -56,12 +64,14 @@ fun foodListScreen(
     val filterState by viewModel.filterUiState.collectAsStateWithLifecycle()
 
 
-    AddFoodFab()
-    FoodHeader()
+    //AddFoodFab()
+    //FoodHeader(modifier)
 
-    FoodCard()
+    FoodCard(modifier)
 
-    when(foodListUiState) {
+    //CardDemo()
+
+    /*when(foodListUiState) {
         is FoodListViewModel.FoodListUiState.Content -> LazyColumn(modifier) {
             val foodsList = (foodListUiState as FoodListViewModel.FoodListUiState.Content).foods
             items(foodsList){ food ->
@@ -71,7 +81,7 @@ fun foodListScreen(
 
         is FoodListViewModel.FoodListUiState.Empty -> EmptyFoodItem(modifier)
         FoodListViewModel.FoodListUiState.Loading -> Text("Loading foods")
-    }
+    }*/
 }
 
 @Composable
@@ -143,22 +153,119 @@ internal fun FoodHeader(modifier: Modifier = Modifier) {
 }
 
 @Composable
-internal fun FoodCard() {
+internal fun FoodCard(modifier: Modifier = Modifier) {
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceVariant,
         ),
-        modifier = Modifier
-            .size(width = 240.dp, height = 100.dp)
+        modifier = modifier
+            .padding(8.dp)
+            .clickable{ },
     ) {
+        Row(
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Photo,
+                contentDescription = "Photo Aliment",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.fillMaxSize(0.30f)
+                                   .padding(bottom = 125.dp)
 
-        Text(
-            text = "Filled",
-            modifier = Modifier
-                .padding(16.dp),
-            textAlign = TextAlign.Center,
-        )
+            )
+
+            Column() {
+                val textColor = MaterialTheme.colorScheme.onSurfaceVariant
+
+                BasicText(
+                    text = "Nom de l'aliment",
+                    autoSize = TextAutoSize.StepBased(maxFontSize = 20.sp),
+                    style = MaterialTheme.typography.headlineMedium,
+                    color = {textColor},
+                    modifier = Modifier
+                                    .padding(top = 2.dp)
+                )
+
+                Column(
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    BasicText(
+                        text = "Expire dans X jours",
+                        autoSize = TextAutoSize.StepBased(maxFontSize = 24.sp),
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = {textColor},
+                        modifier = Modifier
+                                    .padding(start = 20.dp)
+                    )
+
+                    Column(
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+
+                    ) {
+                        BasicText(
+                            text = "Date de péremption : JJ/MM/AAAA",
+                            autoSize = TextAutoSize.StepBased(maxFontSize = 12.sp),
+                            style = MaterialTheme.typography.headlineSmall,
+                            color = {textColor},
+                            modifier = Modifier
+                                .padding(start = 20.dp)
+                        )
+                    }
+                }
+
+            }
+
+            Column(
+                verticalArrangement = Arrangement.Top,
+                horizontalAlignment = Alignment.End
+                ) {
+                Icon(
+                    imageVector = Icons.Filled.Delete,
+                    contentDescription = "Photo Aliment",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 10.dp, top = 4.dp)
+
+                )
+            }
 
 
+        }
+    }
+}
+@Preview(widthDp = 40)
+@Composable
+fun CardDemo() {
+    Card(
+        modifier = Modifier
+            .padding(15.dp)
+            .clickable{ },
+    ) {
+        Column(
+            modifier = Modifier.padding(15.dp)
+        ) {
+            Text(
+                buildAnnotatedString {
+                    append("welcome to ")
+                    withStyle(style = SpanStyle(
+                        fontWeight = FontWeight.W900,
+                        color = Color(0xFF4552B8)
+                    )
+                    ) {
+                        append("Jetpack Compose Playground")
+                    }
+                }
+            )
+            Text(
+                buildAnnotatedString {
+                    append("Now you are in the ")
+                    withStyle(style = SpanStyle(fontWeight = FontWeight.W900)) {
+                        append("Card")
+                    }
+                    append(" section")
+                }
+            )
+        }
     }
 }
