@@ -1,14 +1,17 @@
 package com.vlt.zeroperte.ui
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -44,6 +47,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.vlt.zeroperte.ui.theme.extendedDark
+import com.vlt.zeroperte.ui.theme.extendedLight
 import com.vlt.zeroperte.ui.theme.onBackgroundLight
 import com.vlt.zeroperte.ui.theme.onSurfaceVariantLight
 import java.util.Date
@@ -55,6 +60,33 @@ data class FoodCardItem(val foodName : String = "Name",
                         val foodPhoto : ImageVector?
                         )
 
+val sampleFoodCardItems = listOf(
+    FoodCardItem(
+        foodName = "Yaourt nature",
+        remainingDay = 3,
+        expiryDate = Date(),
+        foodPhoto = Icons.Filled.Photo
+    ),
+    FoodCardItem(
+        foodName = "Compote de pomme",
+        remainingDay = 10,
+        expiryDate = Date(),
+        foodPhoto = null
+    ),
+    FoodCardItem(
+        foodName = "Lait demi-écrémé",
+        remainingDay = 0,
+        expiryDate = Date(),
+        foodPhoto = Icons.Filled.Photo
+    ),
+    FoodCardItem(
+        foodName = "Riz basmati",
+        remainingDay = 45,
+        expiryDate = Date(),
+        foodPhoto = null
+    )
+)
+
 @Composable
 fun foodListScreen(
     modifier: Modifier,
@@ -64,12 +96,31 @@ fun foodListScreen(
     val filterState by viewModel.filterUiState.collectAsStateWithLifecycle()
 
 
-    //AddFoodFab()
-    //FoodHeader(modifier)
+    AddFoodFab()
 
-    FoodCard(modifier)
+        LazyColumn (
+            modifier = Modifier.fillMaxWidth(),
+            contentPadding = PaddingValues(16.dp)
+        ){
 
-    //CardDemo()
+                item {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight(),
+                        horizontalArrangement = Arrangement.Start,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        FoodHeader(modifier)
+                    }
+                }
+
+                items(sampleFoodCardItems){ item ->
+                    FoodCard(modifier, item)
+                }
+            }
+
+    }
 
     /*when(foodListUiState) {
         is FoodListViewModel.FoodListUiState.Content -> LazyColumn(modifier) {
@@ -82,7 +133,6 @@ fun foodListScreen(
         is FoodListViewModel.FoodListUiState.Empty -> EmptyFoodItem(modifier)
         FoodListViewModel.FoodListUiState.Loading -> Text("Loading foods")
     }*/
-}
 
 @Composable
 internal fun EmptyFoodItem(modifier: Modifier = Modifier) {
@@ -146,39 +196,47 @@ internal fun FoodHeader(modifier: Modifier = Modifier) {
         style = MaterialTheme.typography.headlineMedium,
         color = MaterialTheme.colorScheme.onBackground,
         modifier = modifier
-            .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp),
         textAlign = TextAlign.Start
     )
 }
 
 @Composable
-internal fun FoodCard(modifier: Modifier = Modifier) {
+internal fun FoodCard(modifier: Modifier = Modifier, foodCardItem : FoodCardItem) {
+    val extendedColors = if (isSystemInDarkTheme()) extendedDark else extendedLight
+
+    val cardColor = when {
+        foodCardItem.remainingDay <= 0 -> extendedColors.expiredContainer.color
+        foodCardItem.remainingDay <= 5 -> extendedColors.expiredSoonContainer.color
+        else -> extendedColors.customColor1.color
+    }
+
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            containerColor = cardColor,
         ),
         modifier = modifier
             .padding(8.dp)
-            .clickable{ },
+            .clickable { },
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp)
         ) {
+
             Icon(
                 imageVector = Icons.Filled.Photo,
                 contentDescription = "Photo Aliment",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.fillMaxSize(0.30f)
-                                   .padding(bottom = 125.dp)
-
+                tint = extendedColors.expiredContainer.onColor,
+                modifier = Modifier.size(90.dp)
             )
 
             Column() {
                 val textColor = MaterialTheme.colorScheme.onSurfaceVariant
 
                 BasicText(
-                    text = "Nom de l'aliment",
+                    text = foodCardItem.foodName,
                     autoSize = TextAutoSize.StepBased(maxFontSize = 20.sp),
                     style = MaterialTheme.typography.headlineMedium,
                     color = {textColor},
@@ -188,15 +246,16 @@ internal fun FoodCard(modifier: Modifier = Modifier) {
 
                 Column(
                     verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                                    .padding(start = 37.dp)
+
                 ) {
                     BasicText(
-                        text = "Expire dans X jours",
-                        autoSize = TextAutoSize.StepBased(maxFontSize = 24.sp),
+                        text = "Expire dans ${foodCardItem.remainingDay} jours",
+                        autoSize = TextAutoSize.StepBased(maxFontSize = 20.sp),
                         style = MaterialTheme.typography.headlineMedium,
                         color = {textColor},
-                        modifier = Modifier
-                                    .padding(start = 20.dp)
                     )
 
                     Column(
@@ -205,12 +264,10 @@ internal fun FoodCard(modifier: Modifier = Modifier) {
 
                     ) {
                         BasicText(
-                            text = "Date de péremption : JJ/MM/AAAA",
+                            text = "Date de péremption : ${foodCardItem.expiryDate}",
                             autoSize = TextAutoSize.StepBased(maxFontSize = 12.sp),
                             style = MaterialTheme.typography.headlineSmall,
                             color = {textColor},
-                            modifier = Modifier
-                                .padding(start = 20.dp)
                         )
                     }
                 }
@@ -219,53 +276,18 @@ internal fun FoodCard(modifier: Modifier = Modifier) {
 
             Column(
                 verticalArrangement = Arrangement.Top,
-                horizontalAlignment = Alignment.End
+                horizontalAlignment = Alignment.End,
+                modifier = Modifier.fillMaxWidth()
                 ) {
                 Icon(
                     imageVector = Icons.Filled.Delete,
                     contentDescription = "Photo Aliment",
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(start = 10.dp, top = 4.dp)
-
+                    modifier = Modifier.size(30.dp)
                 )
             }
 
 
-        }
-    }
-}
-@Preview(widthDp = 40)
-@Composable
-fun CardDemo() {
-    Card(
-        modifier = Modifier
-            .padding(15.dp)
-            .clickable{ },
-    ) {
-        Column(
-            modifier = Modifier.padding(15.dp)
-        ) {
-            Text(
-                buildAnnotatedString {
-                    append("welcome to ")
-                    withStyle(style = SpanStyle(
-                        fontWeight = FontWeight.W900,
-                        color = Color(0xFF4552B8)
-                    )
-                    ) {
-                        append("Jetpack Compose Playground")
-                    }
-                }
-            )
-            Text(
-                buildAnnotatedString {
-                    append("Now you are in the ")
-                    withStyle(style = SpanStyle(fontWeight = FontWeight.W900)) {
-                        append("Card")
-                    }
-                    append(" section")
-                }
-            )
         }
     }
 }
