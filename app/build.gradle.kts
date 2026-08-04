@@ -100,4 +100,6 @@ dependencies {
     ksp("com.google.dagger:hilt-android-compiler:2.57.1")
 
     implementation("androidx.compose.ui:ui-text-google-fonts:...")
+
+    implementation(libs.compose.form)
 }

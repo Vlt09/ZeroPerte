@@ -32,18 +32,18 @@ class MainActivity : ComponentActivity() {
                 {
                     NavHost(
                         navController = navController,
-                        startDestination = Screen.FoodList.route
+                        startDestination = Screen.FoodCreateUpdate.route
                     ){
                         composable(Screen.FoodList.route){
                             foodListScreen(modifier = Modifier.fillMaxSize())
                         }
                         composable(Screen.FoodDetail.route){backStackEntry ->
                             val foodId = backStackEntry.arguments?.getString("foodId")
-                            FoodDetailScreen(navController, foodId)
+                            //FoodDetailScreen()
                         }
                         composable(Screen.FoodCreateUpdate.route){backStackEntry ->
                             val foodId = backStackEntry.arguments?.getString("foodId")
-                            FoodCreateUpdateScreen(navController, foodId)
+                            FoodCreateUpdateScreen()
                         }
                         composable(Screen.Parameters.route){}
 
