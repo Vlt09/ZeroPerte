@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -93,41 +94,43 @@ fun FoodCreateUpdateScreen(
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp)
         ) {
-            Column(
+            Box(
                 modifier = modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
+                    .padding(top = 24.dp, bottom = 32.dp)
             ) {
                 // --- Barre du haut : Annuler + titre ---
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.Start,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(top = 24.dp, bottom = 32.dp)
+                    horizontalArrangement = Arrangement.Start
                 ) {
+
+                    Box(){
                     IconButton(onClick = {
                         navController.navigate(Screen.FoodList.route)
                     }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Annuler",
-                            tint = MaterialTheme.colorScheme.onBackground
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                contentDescription = "Annuler",
+                                tint = MaterialTheme.colorScheme.onBackground,
+                                modifier = Modifier.padding(end = 13.dp)
+                            )
+                        }
+
+                        Text(
+                            text = "Annuler",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onBackground,
                         )
+
                     }
 
-                    Text(
-                        text = "Annuler",
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
 
                     Text(
                         text = "Nouvel aliment",
                         style = MaterialTheme.typography.headlineMedium,
                         color = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier
-                            .padding(start = 24.dp)
+                        modifier = Modifier.padding(start = 37.dp)
                     )
 
                     IconButton(onClick = {
@@ -135,101 +138,105 @@ fun FoodCreateUpdateScreen(
                             viewModel.save()
                             navController.navigate(Screen.FoodList.route)
                         }
-                    }) {
+                    }, modifier = Modifier.fillMaxWidth()) {
                         Icon(
                             imageVector = Icons.Filled.Save,
                             contentDescription = "Enregistrer",
-                            tint = MaterialTheme.colorScheme.onBackground
+                            tint = MaterialTheme.colorScheme.onBackground,
+                            modifier = Modifier.padding(start = 25.dp, top = 3.dp)
+                                .size(32.dp)
                         )
                     }
 
                 }
 
-                // Entry name
-                TextField(
-                    label = "Nom de l'aliment",
-                    form = viewModel.form,
-                    fieldState = viewModel.form.name
-                ).Field()
+            }
 
-                // --- Date de péremption (obligatoire) ---
-                Box() {
-                    DateField(
-                        label = "Date de péremption",
-                        form = viewModel.form,
-                        fieldState = viewModel.form.expiryDate,
-                        formatter = ::dateLong,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(bottom = 16.dp)
-                    ).Field()
+            // Entry name
+            TextField(
+                label = "Nom de l'aliment",
+                form = viewModel.form,
+                fieldState = viewModel.form.name
+            ).Field()
 
-                    IconButton(
-                        onClick = { /* TODO: ouvrir l'appareil photo */ },
-                        modifier = Modifier.align(Alignment.CenterEnd)
-                            .padding(bottom = 5.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Filled.PhotoCamera,
-                            contentDescription = "Prendre une photo de la date de péremption"
-                        )
-                    }
-                }
-
-
-                // --- Date d'achat (optionnelle) ---
+            // --- Date de péremption (obligatoire) ---
+            Box() {
                 DateField(
-                    label = "Date d'achat (optionnelle)",
+                    label = "Date de péremption",
                     form = viewModel.form,
-                    fieldState = viewModel.form.purchasedDate,
+                    fieldState = viewModel.form.expiryDate,
                     formatter = ::dateLong,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(bottom = 16.dp)
                 ).Field()
 
-                // Amount
-                TextField(
-                    label = "Quantité (optionnelle)",
-                    form = viewModel.form,
-                    fieldState = viewModel.form.amount,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp)
-
-                ).Field()
-
-
-                // --- Marque (optionnelle) ---
-                TextField(
-                    label = "Marque (optionnelle)",
-                    form = viewModel.form,
-                    fieldState = viewModel.form.brand,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp)
-                ).Field()
-
-                // --- Marque (optionnelle) ---
-                TextField(
-                    label = "Catégorie (optionnelle)",
-                    form = viewModel.form,
-                    fieldState = viewModel.form.category,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp)
-                ).Field()
-
-                // --- Commentaire (optionnel) ---
-                TextField(
-                    label = "Commentaire (optionnelle)",
-                    form = viewModel.form,
-                    fieldState = viewModel.form.comment,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp)
-                ).Field()
+                IconButton(
+                    onClick = { /* TODO: ouvrir l'appareil photo */ },
+                    modifier = Modifier.align(Alignment.CenterEnd)
+                        .padding(bottom = 8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.PhotoCamera,
+                        contentDescription = "Prendre une photo de la date de péremption"
+                    )
+                }
             }
+
+
+            // --- Date d'achat (optionnelle) ---
+            DateField(
+                label = "Date d'achat (optionnelle)",
+                form = viewModel.form,
+                fieldState = viewModel.form.purchasedDate,
+                formatter = ::dateLong,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+            ).Field()
+
+            // Amount
+            TextField(
+                label = "Quantité (optionnelle)",
+                form = viewModel.form,
+                fieldState = viewModel.form.amount,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+
+            ).Field()
+
+
+            // --- Marque (optionnelle) ---
+            TextField(
+                label = "Marque (optionnelle)",
+                form = viewModel.form,
+                fieldState = viewModel.form.brand,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+            ).Field()
+
+            // --- Marque (optionnelle) ---
+            TextField(
+                label = "Catégorie (optionnelle)",
+                form = viewModel.form,
+                fieldState = viewModel.form.category,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+            ).Field()
+
+            // --- Commentaire (optionnel) ---
+            TextField(
+                label = "Commentaire (optionnelle)",
+                form = viewModel.form,
+                fieldState = viewModel.form.comment,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp)
+            ).Field()
+
         }
     }
 
