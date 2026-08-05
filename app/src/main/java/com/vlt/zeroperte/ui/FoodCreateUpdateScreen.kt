@@ -6,24 +6,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenuBox
-import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -32,18 +23,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavHostController
 import ch.benlu.composeform.fields.DateField
 import ch.benlu.composeform.fields.TextField
 import ch.benlu.composeform.formatters.dateLong
@@ -65,7 +54,8 @@ fun FoodCreateUpdateScreen(
     modifier: Modifier = Modifier,
     viewModel: FoodCreateUpdateViewModel = hiltViewModel(),
     onCancelClick: () -> Unit = {},
-    onSaveClick: () -> Unit = {}
+    onSaveClick: () -> Unit = {},
+    navController: NavHostController
 ) {
 
 
@@ -116,7 +106,9 @@ fun FoodCreateUpdateScreen(
                         .fillMaxWidth()
                         .padding(top = 24.dp, bottom = 32.dp)
                 ) {
-                    IconButton(onClick = onCancelClick) {
+                    IconButton(onClick = {
+                        navController.navigate(Screen.FoodList.route)
+                    }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Annuler",
@@ -141,6 +133,7 @@ fun FoodCreateUpdateScreen(
                     IconButton(onClick = {
                         coroutineScope.launch {
                             viewModel.save()
+                            navController.navigate(Screen.FoodList.route)
                         }
                     }) {
                         Icon(
@@ -160,8 +153,6 @@ fun FoodCreateUpdateScreen(
                 ).Field()
 
                 // --- Date de péremption (obligatoire) ---
-
-
                 Box() {
                     DateField(
                         label = "Date de péremption",

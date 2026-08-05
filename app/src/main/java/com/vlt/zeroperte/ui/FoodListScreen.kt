@@ -55,6 +55,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavHostController
 import com.vlt.zeroperte.ui.theme.extendedDark
 import com.vlt.zeroperte.ui.theme.extendedLight
 import java.time.LocalDate
@@ -116,7 +117,8 @@ val sampleFoodCardItems = listOf(
 @Composable
 fun foodListScreen(
     modifier: Modifier,
-    viewModel: FoodListViewModel = hiltViewModel()
+    viewModel: FoodListViewModel = hiltViewModel(),
+    navController: NavHostController
 ){
     val foodListUiState by viewModel.uiState.collectAsStateWithLifecycle()
     val filterState by viewModel.filterUiState.collectAsStateWithLifecycle()
@@ -124,7 +126,7 @@ fun foodListScreen(
     Scaffold(
         modifier = modifier,
         floatingActionButton = {
-            AddFoodFab()
+            AddFoodFab(navController = navController)
         }
     ) { innerPadding ->
 
@@ -244,9 +246,11 @@ internal fun EmptyFoodItem(modifier: Modifier = Modifier) {
 }
 
 @Composable
-internal fun AddFoodFab(onClick: () -> Unit = {}) {
+internal fun AddFoodFab(onClick: () -> Unit = {}, navController: NavHostController) {
     FloatingActionButton(
-        onClick = onClick
+        onClick = {
+            navController.navigate(Screen.FoodCreateUpdate.route)
+        }
     ) {
         Icon(Icons.Filled.Add, contentDescription = "Ajouter un aliment")
     }
