@@ -14,6 +14,7 @@ import javax.inject.Singleton
 class DefaultFoodRepository @Inject constructor(
     private val foodDao: FoodDao
 ) : FoodRepository {
+
     override fun getAllFoods() = foodDao.allFoods()
 
     override suspend fun create(foodDto: FoodDto) = foodDao.insert(FoodMapper.fromDto(foodDto))

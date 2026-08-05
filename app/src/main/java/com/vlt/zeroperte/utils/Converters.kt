@@ -15,6 +15,7 @@ class Converters {
   fun fromStringFormat(value: String?): LocalDate? {
       return value?.let { LocalDate.parse(it, formatter) }
   }
+
   @TypeConverter
   fun dateToStringDate(date: LocalDate?): String? {
     return date?.toString()

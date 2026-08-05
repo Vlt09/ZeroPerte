@@ -13,7 +13,7 @@ class FoodForm : Form() {
 
     class PositiveValueValidator(errorText: String? = null) : Validator<String?>(
         validate = { value ->
-            value != null && value.matches(Regex("[^.,-][0-9]{1,15}$"))
+            value == null || value.matches(Regex("[0-9]{1,15}"))
         },
         errorText = errorText ?: "Seulement nombre positif."
     )
@@ -25,14 +25,14 @@ class FoodForm : Form() {
     )
 
     @FormField
-    val expiredDate = FieldState(
-        state = mutableStateOf<Date?>(null), // Use Date instead of LocalDate bc DateField methode takes Date
+    val expiryDate = FieldState(
+        state = mutableStateOf<Date?>(null), // Use Date instead of LocalDate bc DateField method
         validators = mutableListOf(NotEmptyValidator())
     )
 
     @FormField
     val purchasedDate = FieldState(
-        state = mutableStateOf<Date?>(null),
+        state = mutableStateOf<Date?>(null)
     )
 
     @FormField

@@ -10,34 +10,34 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface FoodDao {
 
-    @Query("SELECT * FROM food WHERE id IN (:foodId)")
-    fun findById(foodId: Long): Food?
+/*    @Query("SELECT * FROM food WHERE id IN (:foodId)")
+    suspend fun findById(foodId: Long): Food?
 
     @Query("SELECT * FROM food WHERE name LIKE :name")
-    fun findByName(name: String): List<Food>
+    suspend fun findByName(name: String): List<Food>
 
     @Query("SELECT * FROM food WHERE category = :category")
-    fun findByCategory(category: String): List<Food>
+    suspend fun findByCategory(category: String): List<Food>
 
     @Query("SELECT * FROM food WHERE brand = :brand")
-    fun findByBrand(brand: String): List<Food>
+    suspend fun findByBrand(brand: String): List<Food>
 
     @Query("SELECT * FROM food WHERE expiryDate <= date()")
-    fun findExpired() : List<Food>
+    suspend fun findExpired() : List<Food>
 
     @Query("SELECT * FROM food WHERE expiryDate >= date('now')" +
             "AND julianday(expiryDate) - julianday('now') < :days")
-    fun findExpiringSinceDays(days: Int) : List<Food>
+    suspend fun findExpiringSinceDays(days: Int) : List<Food>*/
 
     @Query("SELECT * FROM food")
     fun allFoods(): Flow<List<Food>>
 
     @Insert
-    fun insert(food: Food)
+    suspend fun insert(food: Food)
 
     @Delete
-    fun delete(food: Food)
+    suspend fun delete(food: Food)
 
     @Update
-    fun update(food: Food)
+    suspend fun update(food: Food)
 }
