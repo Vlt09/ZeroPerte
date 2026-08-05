@@ -18,11 +18,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
@@ -36,6 +36,7 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.derivedStateOf
@@ -59,12 +60,14 @@ import androidx.navigation.NavHostController
 import com.vlt.zeroperte.ui.theme.extendedDark
 import com.vlt.zeroperte.ui.theme.extendedLight
 import java.time.LocalDate
+import java.time.temporal.ChronoUnit
 
 
-data class FoodCardItem(val foodName : String = "Name",
-                        val remainingDay : Int = 0,
-                        val expiryDate : LocalDate,
-                        val foodPhoto : ImageVector?
+data class FoodCardItem(
+    val foodName: String = "Name",
+    val remainingDay: Long = 0,
+    val expiryDate: LocalDate,
+    val foodPhoto: ImageVector?
                         )
 
 val sampleFoodCardItems = listOf(
@@ -130,26 +133,21 @@ fun foodListScreen(
         }
     ) { innerPadding ->
 
-        /*when(foodListUiState) {
-        is FoodListViewModel.FoodListUiState.Content -> FoodListLazyColumn(modifier)
+        when(foodListUiState) {
+        is FoodListViewModel.FoodListUiState.Content -> FoodListLazyColumn(modifier,
+            foodListUiState as FoodListViewModel.FoodListUiState.Content
+        )
         is FoodListViewModel.FoodListUiState.Empty -> EmptyFoodItem(modifier)
         FoodListViewModel.FoodListUiState.Loading -> Text("Loading foods")
-        }*/
+        }
 
-        FoodListLazyColumn(modifier)
+        //FoodListLazyColumn(modifier, foodListUiState)
     }
-
-    /*when(foodListUiState) {
-    is FoodListViewModel.FoodListUiState.Content -> FoodListLazyColumn(modifier)
-    is FoodListViewModel.FoodListUiState.Empty -> EmptyFoodItem(modifier)
-    FoodListViewModel.FoodListUiState.Loading -> Text("Loading foods")
-    }*/
-
 
 }
 
 @Composable
-private fun FoodListLazyColumn(modifier: Modifier) {
+private fun FoodListLazyColumn(modifier: Modifier, content: FoodListViewModel.FoodListUiState.Content) {
     val listState = rememberLazyListState()
     var trackHeightPx by remember { mutableIntStateOf(0) }
 
@@ -180,9 +178,20 @@ private fun FoodListLazyColumn(modifier: Modifier) {
             }
         }
 
-        items(sampleFoodCardItems) { item ->
-            FoodCard(modifier, item)
+        items(content.foods){food ->
+            val remainingDay = ChronoUnit.DAYS.between(LocalDate.now(),
+                food.expiryDate)
+
+            val foodCardItem = FoodCardItem(
+                foodName = food.name,
+                remainingDay = remainingDay,
+                expiryDate = food.expiryDate,
+                foodPhoto = null
+            )
+
+            FoodCard(modifier, foodCardItem,)
         }
+
     }
 
     // Custom scrollbar
@@ -269,7 +278,7 @@ internal fun FoodHeader(modifier: Modifier = Modifier) {
 }
 
 @Composable
-internal fun FoodCard(modifier: Modifier = Modifier, foodCardItem : FoodCardItem) {
+internal fun FoodCard(modifier: Modifier = Modifier, foodCardItem: FoodCardItem, viewModel: FoodListViewModel) {
     val extendedColors = if (isSystemInDarkTheme()) extendedDark else extendedLight
 
     val cardColor = when {
@@ -300,7 +309,6 @@ internal fun FoodCard(modifier: Modifier = Modifier, foodCardItem : FoodCardItem
             )
 
             Column() {
-                val textColor = MaterialTheme.colorScheme.onSurfaceVariant
 
                 BasicText(
                     text = foodCardItem.foodName,
@@ -345,13 +353,17 @@ internal fun FoodCard(modifier: Modifier = Modifier, foodCardItem : FoodCardItem
                 verticalArrangement = Arrangement.Top,
                 horizontalAlignment = Alignment.End,
                 modifier = Modifier.fillMaxWidth()
-                ) {
-                Icon(
-                    imageVector = Icons.Filled.Delete,
-                    contentDescription = "Photo Aliment",
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(30.dp)
-                )
+            ) {
+                IconButton(onClick = {
+                    viewModel.delete(foodCardItem)
+                }, modifier = Modifier.fillMaxWidth()){
+                    Icon(
+                        imageVector = Icons.Filled.Delete,
+                        contentDescription = "Photo Aliment",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.size(30.dp)
+                    )
+                }
             }
 
 
