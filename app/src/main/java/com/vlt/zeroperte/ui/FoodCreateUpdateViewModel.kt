@@ -51,9 +51,10 @@ class FoodCreateUpdateViewModel @Inject constructor(private val repository: Food
                 brand = if (values["brand"] == null) null else values["brand"] as String,
                 category = if (values["category"] == null) null else values["category"] as String,
                 datePurchased = if (values["datePurchased"] == null) null
-                        else dateToLocalDate(values["datePurchased"] as Date),
+                else dateToLocalDate(values["datePurchased"] as Date),
                 comment = if (values["comment"] == null) null else values["comment"] as String,
-                amount = if (values["amount"] == null) null else values["amount"] as Int
+                amount = if (values["amount"] == null) null else values["amount"] as Int,
+                id = 0 // Room treat 0 as not-set while inserting the item
             )
             Log.d(TAG, "Enregistrement de l'aliment : $foodDto")
 

@@ -1,8 +1,11 @@
 package com.vlt.zeroperte.ui
 
+import android.content.ContentValues.TAG
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vlt.zeroperte.data.FoodRepository
+import com.vlt.zeroperte.data.model.FoodDto
 import com.vlt.zeroperte.data.model.FoodListViewModelDto
 import com.vlt.zeroperte.data.model.domain.FoodStatus
 import com.vlt.zeroperte.utils.FoodMapper
@@ -30,6 +33,7 @@ class FoodListViewModel @Inject constructor(private val repository: FoodReposito
                            val filter: FilterState)
             : FoodListUiState
 
+        data object Delete : FoodListUiState
         data object Loading : FoodListUiState
     }
 
@@ -49,7 +53,6 @@ class FoodListViewModel @Inject constructor(private val repository: FoodReposito
                     selectedStatus = null
                     )
                 )
-
     val filterUiState =  _filterUiState.asStateFlow()
 
     val uiState : StateFlow<FoodListUiState> =
@@ -58,6 +61,7 @@ class FoodListViewModel @Inject constructor(private val repository: FoodReposito
             _filterUiState
         ){
             foods, filter ->
+            Log.d(TAG, "combine triggered, foods.size=${foods.size}")
             if (foods.isEmpty()){
                 FoodListUiState.Empty(filter)
             }
@@ -103,5 +107,12 @@ class FoodListViewModel @Inject constructor(private val repository: FoodReposito
         }
     }
 
-
+    suspend fun delete(foodDto: FoodDto) {
+        try {
+            repository.delete(foodDto)
+            Log.i(TAG, "Aliment supprimé avec succès : id=${foodDto}")
+        } catch (e: Exception) {
+            Log.e(TAG, "Échec de la suppression de l'aliment", e)
+        }
+    }
 }

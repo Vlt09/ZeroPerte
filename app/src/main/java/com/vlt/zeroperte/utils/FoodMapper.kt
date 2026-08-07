@@ -18,16 +18,30 @@ object FoodMapper {
      * @return the corresponding [Food] entity, or `null` if a required field is missing
      */
     fun fromDto(foodDto: FoodDto) : Food {
-        return Food(name = foodDto.name, brand = foodDto.brand, category = foodDto.category,
-            datePurchased = foodDto.datePurchased, expiryDate = foodDto.expiryDate,
-            comment = foodDto.comment, amount = foodDto.amount)
+        return Food(id = foodDto.id, name = foodDto.name, brand = foodDto.brand,
+            category = foodDto.category, datePurchased = foodDto.datePurchased,
+            expiryDate = foodDto.expiryDate, comment = foodDto.comment, amount = foodDto.amount)
     }
 
-    fun toFoodListViewModelDto(food: Food) : FoodListViewModelDto{
-        return FoodListViewModelDto(food.name, food.brand, food.category, food.datePurchased,
+    fun toFoodListViewModelDto(food: Food) : FoodListViewModelDto {
+        return FoodListViewModelDto(
+            food.name, food.brand, food.category, food.datePurchased,
             food.expiryDate, food.comment, food.amount,
-            FoodStatusCalculator.fromExpiryDate(food.expiryDate))
+            FoodStatusCalculator.fromExpiryDate(food.expiryDate), food.id
+        )
     }
 
+    fun toFoodDto(dto: FoodListViewModelDto): FoodDto {
+        return FoodDto(
+            name = dto.name,
+            brand = dto.brand,
+            category = dto.category,
+            datePurchased = dto.datePurchased,
+            expiryDate = dto.expiryDate,
+            comment = dto.comment,
+            amount = dto.amount,
+            id = dto.id
+        )
+    }
 
 }

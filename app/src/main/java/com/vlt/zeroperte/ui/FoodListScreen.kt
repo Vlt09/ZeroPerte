@@ -1,5 +1,11 @@
 package com.vlt.zeroperte.ui
 
+import android.content.ContentValues.TAG
+import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -41,7 +47,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
@@ -57,74 +65,35 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.vlt.zeroperte.data.model.FoodDto
 import com.vlt.zeroperte.ui.theme.extendedDark
 import com.vlt.zeroperte.ui.theme.extendedLight
+import com.vlt.zeroperte.utils.FoodMapper
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
 
 data class FoodCardItem(
-    val foodName: String = "Name",
+    val name: String = "Name",
     val remainingDay: Long = 0,
     val expiryDate: LocalDate,
-    val foodPhoto: ImageVector?
-                        )
-
-val sampleFoodCardItems = listOf(
-    FoodCardItem(
-        foodName = "Yaourt nature",
-        remainingDay = 3,
-        expiryDate = LocalDate.now(),
-        foodPhoto = Icons.Filled.Photo
-    ),
-    FoodCardItem(
-        foodName = "Compote de pomme",
-        remainingDay = 10,
-        expiryDate = LocalDate.now(),
-        foodPhoto = null
-    ),
-    FoodCardItem(
-        foodName = "Lait demi-écrémé",
-        remainingDay = 0,
-        expiryDate = LocalDate.now(),
-        foodPhoto = Icons.Filled.Photo
-    ),
-    FoodCardItem(
-        foodName = "Riz basmati",
-        remainingDay = 45,
-        expiryDate = LocalDate.now(),
-        foodPhoto = null
-    ),
-    FoodCardItem(
-        foodName = "Test",
-        remainingDay = 45,
-        expiryDate = LocalDate.now(),
-        foodPhoto = null
-    ),
-    FoodCardItem(
-        foodName = "Test",
-        remainingDay = 45,
-        expiryDate = LocalDate.now(),
-        foodPhoto = null
-    ),
-    FoodCardItem(
-        foodName = "Test",
-        remainingDay = 45,
-        expiryDate = LocalDate.now(),
-        foodPhoto = null
-    )
-
-
+    val photo: ImageVector?,
+    val dtoRef: FoodDto
 )
 
+
 @Composable
-fun foodListScreen(
+fun FoodListScreen(
     modifier: Modifier,
     viewModel: FoodListViewModel = hiltViewModel(),
     navController: NavHostController
 ){
     val foodListUiState by viewModel.uiState.collectAsStateWithLifecycle()
     val filterState by viewModel.filterUiState.collectAsStateWithLifecycle()
+    val coroutineScope = rememberCoroutineScope() // Use when User trigger Delete button
 
     Scaffold(
         modifier = modifier,
@@ -134,20 +103,28 @@ fun foodListScreen(
     ) { innerPadding ->
 
         when(foodListUiState) {
-        is FoodListViewModel.FoodListUiState.Content -> FoodListLazyColumn(modifier,
-            foodListUiState as FoodListViewModel.FoodListUiState.Content
+        is FoodListViewModel.FoodListUiState.Content -> FoodListLazyColumn(modifier, viewModel,
+            foodListUiState as FoodListViewModel.FoodListUiState.Content, coroutineScope
         )
         is FoodListViewModel.FoodListUiState.Empty -> EmptyFoodItem(modifier)
         FoodListViewModel.FoodListUiState.Loading -> Text("Loading foods")
+            else -> {
+                Log.i(TAG, "else statement foodListUiState : $foodListUiState")
+            }
         }
 
-        //FoodListLazyColumn(modifier, foodListUiState)
     }
 
 }
 
 @Composable
-private fun FoodListLazyColumn(modifier: Modifier, content: FoodListViewModel.FoodListUiState.Content) {
+private fun FoodListLazyColumn(
+    modifier: Modifier, viewModel: FoodListViewModel,
+    content: FoodListViewModel.FoodListUiState.Content,
+    coroutineScope: CoroutineScope
+) {
+    Log.i(TAG, "FoodListViewModel.FoodListUiState.Content")
+
     val listState = rememberLazyListState()
     var trackHeightPx by remember { mutableIntStateOf(0) }
 
@@ -178,18 +155,40 @@ private fun FoodListLazyColumn(modifier: Modifier, content: FoodListViewModel.Fo
             }
         }
 
-        items(content.foods){food ->
+        items(content.foods){foodVmDto ->
             val remainingDay = ChronoUnit.DAYS.between(LocalDate.now(),
-                food.expiryDate)
+                foodVmDto.expiryDate)
+            var visible by remember { mutableStateOf(true) }
 
             val foodCardItem = FoodCardItem(
-                foodName = food.name,
+                name = foodVmDto.name,
                 remainingDay = remainingDay,
-                expiryDate = food.expiryDate,
-                foodPhoto = null
+                expiryDate = foodVmDto.expiryDate,
+                photo = null,
+                dtoRef = FoodMapper.toFoodDto(foodVmDto)
             )
 
-            FoodCard(modifier, foodCardItem,)
+            AnimatedVisibility(
+                visible = visible,
+                exit = fadeOut(animationSpec = tween(300)) +
+                        shrinkVertically(animationSpec = tween(300)),
+                modifier = Modifier.animateItem()
+            ) {
+                FoodCard(modifier = modifier,
+                    foodCardItem = foodCardItem,
+                    viewModel = viewModel,
+                    coroutineScope = coroutineScope,
+                    onDeleteClick = {
+                        visible = false
+
+                        coroutineScope.launch {
+                            delay(600) // animation duration
+                            viewModel.delete(foodCardItem.dtoRef)
+                        }
+                    }
+                )
+            }
+
         }
 
     }
@@ -221,6 +220,8 @@ private fun FoodListLazyColumn(modifier: Modifier, content: FoodListViewModel.Fo
 
 @Composable
 internal fun EmptyFoodItem(modifier: Modifier = Modifier) {
+    Log.i(TAG, "FoodListViewModel.FoodListUiState.Empty")
+
     val onBackground = MaterialTheme.colorScheme.onBackground
     val onBackgroundVariant = MaterialTheme.colorScheme.onSurfaceVariant
 
@@ -278,7 +279,10 @@ internal fun FoodHeader(modifier: Modifier = Modifier) {
 }
 
 @Composable
-internal fun FoodCard(modifier: Modifier = Modifier, foodCardItem: FoodCardItem, viewModel: FoodListViewModel) {
+internal fun FoodCard(
+    modifier: Modifier = Modifier, foodCardItem: FoodCardItem,
+    viewModel: FoodListViewModel, coroutineScope: CoroutineScope, onDeleteClick: () -> Unit
+) {
     val extendedColors = if (isSystemInDarkTheme()) extendedDark else extendedLight
 
     val cardColor = when {
@@ -311,7 +315,7 @@ internal fun FoodCard(modifier: Modifier = Modifier, foodCardItem: FoodCardItem,
             Column() {
 
                 BasicText(
-                    text = foodCardItem.foodName,
+                    text = foodCardItem.name,
                     autoSize = TextAutoSize.StepBased(maxFontSize = 20.sp),
                     style = MaterialTheme.typography.headlineMedium,
                     color = {cardColor.expiredSoonCardTypoDark1},
@@ -354,9 +358,7 @@ internal fun FoodCard(modifier: Modifier = Modifier, foodCardItem: FoodCardItem,
                 horizontalAlignment = Alignment.End,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                IconButton(onClick = {
-                    viewModel.delete(foodCardItem)
-                }, modifier = Modifier.fillMaxWidth()){
+                IconButton(onClick = onDeleteClick, modifier = Modifier.fillMaxWidth()){
                     Icon(
                         imageVector = Icons.Filled.Delete,
                         contentDescription = "Photo Aliment",
