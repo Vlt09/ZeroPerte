@@ -6,6 +6,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -45,6 +46,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -66,6 +68,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.vlt.zeroperte.data.model.FoodDto
+import com.vlt.zeroperte.data.model.domain.FoodStatus
 import com.vlt.zeroperte.ui.theme.extendedDark
 import com.vlt.zeroperte.ui.theme.extendedLight
 import com.vlt.zeroperte.utils.FoodMapper
@@ -104,7 +107,7 @@ fun FoodListScreen(
 
         when(foodListUiState) {
         is FoodListViewModel.FoodListUiState.Content -> FoodListLazyColumn(modifier, viewModel,
-            foodListUiState as FoodListViewModel.FoodListUiState.Content, coroutineScope
+            foodListUiState as FoodListViewModel.FoodListUiState.Content, coroutineScope, filterState
         )
         is FoodListViewModel.FoodListUiState.Empty -> EmptyFoodItem(modifier)
         FoodListViewModel.FoodListUiState.Loading -> Text("Loading foods")
@@ -121,7 +124,8 @@ fun FoodListScreen(
 private fun FoodListLazyColumn(
     modifier: Modifier, viewModel: FoodListViewModel,
     content: FoodListViewModel.FoodListUiState.Content,
-    coroutineScope: CoroutineScope
+    coroutineScope: CoroutineScope,
+    filterState: FoodListViewModel.FilterState
 ) {
     Log.i(TAG, "FoodListViewModel.FoodListUiState.Content")
 
@@ -153,6 +157,9 @@ private fun FoodListLazyColumn(
             ) {
                 FoodHeader(modifier)
             }
+            FoodStatusFilterRow(filterState = filterState,
+                onStatusClick = {foodStatus -> viewModel.toggleStatus(foodStatus)})
+
         }
 
         items(content.foods){foodVmDto ->
@@ -370,5 +377,87 @@ internal fun FoodCard(
 
 
         }
+    }
+}
+
+@Composable
+internal fun FoodStatusFilterRow(
+    filterState: FoodListViewModel.FilterState,
+    onStatusClick: (FoodStatus) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val extendedColors = if (isSystemInDarkTheme()) extendedDark else extendedLight
+
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        FilterStatusButton(
+            text = "Valide",
+            colorFamily = extendedColors.validCard,
+            selected = filterState.selectedStatus == FoodStatus.Edible,
+            onClick = { onStatusClick(FoodStatus.Edible) },
+            modifier = Modifier.weight(1f)
+        )
+
+        FilterStatusButton(
+            text = "Expire bientôt",
+            colorFamily = extendedColors.expiredSoonCard,
+            selected = filterState.selectedStatus == FoodStatus.ExpiringSoon,
+            onClick = { onStatusClick(FoodStatus.ExpiringSoon) },
+            modifier = Modifier.weight(1f)
+        )
+
+        FilterStatusButton(
+            text = "Expiré",
+            colorFamily = extendedColors.expiredCard,
+            selected = filterState.selectedStatus == FoodStatus.Expired,
+            onClick = { onStatusClick(FoodStatus.Expired) },
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+/**
+ * Bouton individuel de filtre : plein (couleur du statut) quand sélectionné,
+ * juste bordé (outline du thème) sinon — pour rester cohérent avec les
+ * couleurs déjà utilisées sur les FoodCard (même ColorFamily réutilisée).
+ */
+@Composable
+private fun FilterStatusButton(
+    text: String,
+    colorFamily: com.vlt.zeroperte.ui.theme.ColorFamily,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    // Le fond reste toujours teinté du statut (container = version douce),
+    // sélectionné ou non — seule la bordure et le poids du texte
+    // changent pour indiquer la sélection, la couleur ne "disparaît"
+    // jamais à l'état non-sélectionné.
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(20.dp),
+        color = colorFamily.colorContainer,
+        border = if (selected) {
+            BorderStroke(2.dp, colorFamily.color)
+        } else {
+            null
+        },
+        modifier = modifier
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.labelLarge.copy(
+                fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal
+            ),
+            color = colorFamily.onColorContainer,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .padding(vertical = 10.dp)
+                .fillMaxWidth()
+        )
     }
 }

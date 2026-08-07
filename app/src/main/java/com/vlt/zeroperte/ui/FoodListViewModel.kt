@@ -68,14 +68,8 @@ class FoodListViewModel @Inject constructor(private val repository: FoodReposito
             else{
                 if (filter.selectedStatus != null){
                     val filteringFoods = foods.filter { f -> f.status == filter.selectedStatus }.toList()
-                    // There is not food that match with the filter so it's empty
-                    if (filteringFoods.isEmpty()){
-                        FoodListUiState.Empty(filter)
-                    }
-                    else{
-                        FoodListUiState.Content(filteringFoods,
-                            filter)
-                    }
+                    FoodListUiState.Content(filteringFoods, filter)
+
                 }
                 else{
                     FoodListUiState.Content(foods, filter)
