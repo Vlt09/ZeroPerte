@@ -13,7 +13,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.vlt.zeroperte.ui.theme.ZeroPerteTheme
 import com.vlt.zeroperte.ui.FoodCreateUpdateScreen
-import com.vlt.zeroperte.ui.foodListScreen
+import com.vlt.zeroperte.ui.FoodListScreen
 import com.vlt.zeroperte.ui.Screen
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -34,7 +34,7 @@ class MainActivity : ComponentActivity() {
                         startDestination = Screen.FoodCreateUpdate.route
                     ){
                         composable(Screen.FoodList.route){
-                            foodListScreen(modifier = Modifier.fillMaxSize(), navController = navController)
+                            FoodListScreen(modifier = Modifier.fillMaxSize(), navController = navController)
                         }
                         composable(Screen.FoodDetail.route){backStackEntry ->
                             val foodId = backStackEntry.arguments?.getString("foodId")
