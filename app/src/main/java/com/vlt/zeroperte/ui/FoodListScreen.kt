@@ -1,6 +1,7 @@
 package com.vlt.zeroperte.ui
 
 import android.content.ContentValues.TAG
+import android.os.Bundle
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -64,6 +65,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.os.bundleOf
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -106,8 +108,13 @@ fun FoodListScreen(
     ) { innerPadding ->
 
         when(foodListUiState) {
-        is FoodListViewModel.FoodListUiState.Content -> FoodListLazyColumn(modifier, viewModel,
-            foodListUiState as FoodListViewModel.FoodListUiState.Content, coroutineScope, filterState
+        is FoodListViewModel.FoodListUiState.Content -> FoodListLazyColumn(
+            modifier,
+            viewModel,
+            foodListUiState as FoodListViewModel.FoodListUiState.Content,
+            coroutineScope,
+            filterState,
+            navController
         )
         is FoodListViewModel.FoodListUiState.Empty -> EmptyFoodItem(modifier)
         FoodListViewModel.FoodListUiState.Loading -> Text("Loading foods")
@@ -125,7 +132,8 @@ private fun FoodListLazyColumn(
     modifier: Modifier, viewModel: FoodListViewModel,
     content: FoodListViewModel.FoodListUiState.Content,
     coroutineScope: CoroutineScope,
-    filterState: FoodListViewModel.FilterState
+    filterState: FoodListViewModel.FilterState,
+    navController: NavHostController
 ) {
     Log.i(TAG, "FoodListViewModel.FoodListUiState.Content")
 
@@ -183,8 +191,7 @@ private fun FoodListLazyColumn(
             ) {
                 FoodCard(modifier = modifier,
                     foodCardItem = foodCardItem,
-                    viewModel = viewModel,
-                    coroutineScope = coroutineScope,
+                    navController = navController,
                     onDeleteClick = {
                         visible = false
 
@@ -288,7 +295,8 @@ internal fun FoodHeader(modifier: Modifier = Modifier) {
 @Composable
 internal fun FoodCard(
     modifier: Modifier = Modifier, foodCardItem: FoodCardItem,
-    viewModel: FoodListViewModel, coroutineScope: CoroutineScope, onDeleteClick: () -> Unit
+    onDeleteClick: () -> Unit,
+    navController: NavHostController
 ) {
     val extendedColors = if (isSystemInDarkTheme()) extendedDark else extendedLight
 
@@ -304,7 +312,11 @@ internal fun FoodCard(
         ),
         modifier = modifier
             .padding(8.dp)
-            .clickable { },
+            .clickable {
+                navController.navigate(
+                    Screen.FoodDetail.createRoute(foodId = foodCardItem.dtoRef.id)
+                )
+            },
     ) {
         Row(
             modifier = Modifier
@@ -420,11 +432,6 @@ internal fun FoodStatusFilterRow(
     }
 }
 
-/**
- * Bouton individuel de filtre : plein (couleur du statut) quand sélectionné,
- * juste bordé (outline du thème) sinon — pour rester cohérent avec les
- * couleurs déjà utilisées sur les FoodCard (même ColorFamily réutilisée).
- */
 @Composable
 private fun FilterStatusButton(
     text: String,
@@ -433,10 +440,6 @@ private fun FilterStatusButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // Le fond reste toujours teinté du statut (container = version douce),
-    // sélectionné ou non — seule la bordure et le poids du texte
-    // changent pour indiquer la sélection, la couleur ne "disparaît"
-    // jamais à l'état non-sélectionné.
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(20.dp),
