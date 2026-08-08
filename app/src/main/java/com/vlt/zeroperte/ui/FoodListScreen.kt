@@ -69,6 +69,7 @@ import androidx.core.os.bundleOf
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.vlt.zeroperte.business.FoodStatusCalculator
 import com.vlt.zeroperte.data.model.FoodDto
 import com.vlt.zeroperte.data.model.domain.FoodStatus
 import com.vlt.zeroperte.ui.theme.extendedDark
@@ -234,8 +235,6 @@ private fun FoodListLazyColumn(
 
 @Composable
 internal fun EmptyFoodItem(modifier: Modifier = Modifier) {
-    Log.i(TAG, "FoodListViewModel.FoodListUiState.Empty")
-
     val onBackground = MaterialTheme.colorScheme.onBackground
     val onBackgroundVariant = MaterialTheme.colorScheme.onSurfaceVariant
 
@@ -302,7 +301,7 @@ internal fun FoodCard(
 
     val cardColor = when {
         foodCardItem.remainingDay <= 0 -> extendedColors.expiredCard
-        foodCardItem.remainingDay <= 5 -> extendedColors.expiredSoonCard
+        foodCardItem.remainingDay <= FoodStatusCalculator.soonExpiredDays -> extendedColors.expiredSoonCard
         else -> extendedColors.validCard
     }
 

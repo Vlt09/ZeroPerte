@@ -11,6 +11,8 @@ import javax.inject.Inject
 interface FoodRepository {
     fun getAllFoods() : Flow<List<Food>>
 
+    suspend fun getById(id: Long) : Food?
+
     suspend fun create(foodDto: FoodDto)
 
     suspend fun delete(foodDto: FoodDto)

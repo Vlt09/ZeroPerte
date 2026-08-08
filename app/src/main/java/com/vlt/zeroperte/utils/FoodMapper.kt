@@ -31,6 +31,14 @@ object FoodMapper {
         )
     }
 
+    fun toFoodDto(food: Food) : FoodDto{
+        return FoodDto(
+            food.name, food.brand, food.category, food.datePurchased,
+            food.expiryDate, food.comment, food.amount,
+            food.id
+        )
+    }
+
     fun toFoodDto(dto: FoodListViewModelDto): FoodDto {
         return FoodDto(
             name = dto.name,

@@ -38,11 +38,8 @@ class FoodCreateUpdateViewModel @Inject constructor(private val repository: Food
 
     suspend fun save(){
         form.validate(true)
-        Log.d(TAG, "Form is valid : ${form.isValid}")
         if (form.isValid){
-            Log.d(TAG, "Before getRawValues")
             val values = form.getRawValues()
-            Log.d(TAG, "After getRawValues : $values")
 
 
             val foodDto = FoodDto(

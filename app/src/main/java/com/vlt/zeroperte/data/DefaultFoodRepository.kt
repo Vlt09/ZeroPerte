@@ -1,5 +1,6 @@
 package com.vlt.zeroperte.data
 
+import com.vlt.zeroperte.data.model.Food
 import com.vlt.zeroperte.data.model.FoodDto
 import com.vlt.zeroperte.data.model.FoodDao
 import com.vlt.zeroperte.utils.FoodMapper
@@ -16,6 +17,9 @@ class DefaultFoodRepository @Inject constructor(
 ) : FoodRepository {
 
     override fun getAllFoods() = foodDao.allFoods()
+
+    override suspend fun getById(id: Long) = foodDao.findById(id)
+
 
     override suspend fun create(foodDto: FoodDto) = foodDao.insert(FoodMapper.fromDto(foodDto))
 

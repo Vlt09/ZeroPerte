@@ -10,9 +10,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface FoodDao {
 
-/*    @Query("SELECT * FROM food WHERE id IN (:foodId)")
-    suspend fun findById(foodId: Long): Food?
-
+/*
     @Query("SELECT * FROM food WHERE name LIKE :name")
     suspend fun findByName(name: String): List<Food>
 
@@ -31,6 +29,9 @@ interface FoodDao {
 
     @Query("SELECT * FROM food")
     fun allFoods(): Flow<List<Food>>
+
+    @Query("SELECT * FROM food WHERE id IN (:foodId)")
+    suspend fun findById(foodId: Long): Food?
 
     @Insert
     suspend fun insert(food: Food)
