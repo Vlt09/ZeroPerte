@@ -31,13 +31,13 @@ class FoodForm : Form() {
     )
 
     @FormField
-    val purchasedDate = FieldState(
+    val datePurchased = FieldState(
         state = mutableStateOf<Date?>(null)
     )
 
     @FormField
     val amount = FieldState(
-        state = mutableStateOf<String?>(null),
+        state = mutableStateOf<String?>("1"),
         validators = mutableListOf(PositiveValueValidator())
     )
 

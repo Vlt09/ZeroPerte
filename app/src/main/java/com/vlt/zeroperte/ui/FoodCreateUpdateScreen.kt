@@ -160,7 +160,7 @@ fun FoodCreateUpdateScreen(
                     viewModel.form.expiryDate.state.value =
                         localDateToDate(updateContent.resource.expiryDate)
                     viewModel.form.brand.state.value = updateContent.resource.brand
-                    viewModel.form.purchasedDate.state.value = if (updateContent.resource.datePurchased != null)
+                    viewModel.form.datePurchased.state.value = if (updateContent.resource.datePurchased != null)
                         localDateToDate(updateContent.resource.datePurchased) else null
                     viewModel.form.amount.state.value = updateContent.resource.amount.toString()
                     viewModel.form.comment.state.value = updateContent.resource.comment
@@ -219,7 +219,7 @@ private fun FormFieldsUi(
     DateField(
         label = "Date d'achat (optionnelle)",
         form = viewModel.form,
-        fieldState = viewModel.form.purchasedDate,
+        fieldState = viewModel.form.datePurchased,
         formatter = ::dateLong,
         modifier = Modifier
             .fillMaxWidth()

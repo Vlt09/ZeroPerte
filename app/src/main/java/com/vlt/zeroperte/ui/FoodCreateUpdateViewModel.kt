@@ -54,7 +54,6 @@ class FoodCreateUpdateViewModel @Inject constructor(private val repository: Food
                 id = (_viewState.value as ViewState.Update).resource.id
             }
 
-
             val foodDto = FoodDto(
                 name = values["name"] as String,
                 expiryDate = dateToLocalDate(values["expiryDate"] as Date),
