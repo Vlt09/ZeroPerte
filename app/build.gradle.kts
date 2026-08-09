@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.androidx.compose.ui.text.google.fonts)
     implementation("androidx.compose.material:material-icons-extended")
     implementation(libs.androidx.compose.foundation)
+    implementation(libs.ads.mobile.sdk)
     testImplementation(libs.junit)
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
     androidTestImplementation(libs.androidx.junit)
@@ -103,4 +104,6 @@ dependencies {
     implementation("androidx.compose.ui:ui-text-google-fonts:...")
 
     implementation(libs.compose.form)
+
+
 }

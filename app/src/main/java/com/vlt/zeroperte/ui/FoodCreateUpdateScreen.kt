@@ -1,5 +1,12 @@
 package com.vlt.zeroperte.ui
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.result.launch
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,14 +30,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
@@ -84,6 +90,7 @@ fun FoodCreateUpdateScreen(
             viewModel.fetchFood(foodId)
         }
     }
+
 
     Scaffold(
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
@@ -152,6 +159,8 @@ fun FoodCreateUpdateScreen(
 
             }
 
+            fun localDateToDate(localDate: LocalDate): Date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant())
+
             when (viewState.value) {
                 is FoodCreateUpdateViewModel.ViewState.Update -> {
                     val updateContent = viewState.value as FoodCreateUpdateViewModel.ViewState.Update
@@ -201,8 +210,10 @@ private fun FormFieldsUi(
                 .padding(bottom = 16.dp)
         ).Field()
 
+        val launchCamera = rememberCameraLauncher{  }
+
         IconButton(
-            onClick = { /* TODO: ouvrir l'appareil photo */ },
+            onClick = launchCamera,
             modifier = Modifier
                 .align(Alignment.CenterEnd)
                 .padding(bottom = 8.dp)
@@ -312,4 +323,48 @@ internal fun SaveErrorMessage(
     }
 }
 
-fun localDateToDate(localDate: LocalDate): Date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant())
+/**
+ * Returns a function to call (typically on a button click) that
+ * handles the whole flow: checks the camera permission, requests it
+ * if needed, then launches the camera and returns the result via
+ * onPhotoTaken.
+ *
+ */
+@Composable
+fun rememberCameraLauncher(onPhotoTaken: (Bitmap?) -> Unit): () -> Unit {
+    val context = LocalContext.current
+
+    val takePictureLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicturePreview()
+    ) { bitmap ->
+        onPhotoTaken(bitmap)
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            takePictureLauncher.launch()
+        } else {
+            Toast.makeText(
+                context,
+                "Autorisez la caméra dans les paramètres pour utiliser cette fonctionnalité",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    return {
+        when {
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                takePictureLauncher.launch()
+            }
+            else -> {
+                permissionLauncher.launch(Manifest.permission.CAMERA)
+            }
+        }
+    }
+}
