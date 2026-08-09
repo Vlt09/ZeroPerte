@@ -1,10 +1,15 @@
 package com.vlt.zeroperte.ui
 
-sealed class Screen(val route: String) {
-    data object FoodList: Screen(route = "foodList")
-    data object FoodDetail: Screen(route = "foodDetail/{foodId}"){
-        fun createRoute(foodId: Long) = "foodDetail/$foodId"
-    }
-    data object FoodCreateUpdate: Screen(route = "foodCreateUpdate/{foodId}")
-    data object Parameters : Screen(route = "parameters")
-}
+import kotlinx.serialization.Serializable
+
+@Serializable
+object FoodList
+
+@Serializable
+object Parameters
+
+@Serializable
+data class FoodDetail(val foodId: Long? = null)
+
+@Serializable
+data class FoodCreateUpdate(val foodId: Long? = null)

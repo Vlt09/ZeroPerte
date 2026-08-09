@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.vlt.zeroperte.business.FoodStatusCalculator
 import com.vlt.zeroperte.ui.theme.ColorFamily
@@ -54,7 +55,8 @@ data class FoodDetailItem(
     val expiryDate: LocalDate,
     val comment: String?,
     val remainingDays: Long,
-    val photo: ImageVector? = null
+    val photo: ImageVector? = null,
+    val id: Long
 )
 
 private val dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy")
@@ -72,18 +74,6 @@ fun FoodDetailScreen(
     val detailState = viewModel.viewState.collectAsStateWithLifecycle()
 
     val extendedColors = if (isSystemInDarkTheme()) extendedDark else extendedLight
-
-
-    /*val foodDetail = FoodDetailItem(
-        name = "Test",
-        brand = "Test",
-        purchaseDate = null,
-        expiryDate = LocalDate.of(2026, 8, 12),
-        comment = null,
-        remainingDays = 5,
-        photo = null
-    )*/
-
 
     LaunchedEffect(Unit) {
         if (foodId != null){
@@ -106,9 +96,10 @@ fun FoodDetailScreen(
 
             FoodDetailUI(
                 modifier = modifier,
-                onBackClick = { navController.navigate(Screen.FoodList.route) },
+                onBackClick = { navController.navigate(FoodList) },
                 onDeleteClick = onDeleteClick,
                 foodDetail = FoodDetailItem(
+                    id = successState.foodDto.id,
                     name = successState.foodDto.name,
                     brand = successState.foodDto.brand,
                     purchaseDate = successState.foodDto.datePurchased,
@@ -118,15 +109,17 @@ fun FoodDetailScreen(
                     photo = null
                 ),
                 statusColor = statusColor,
+                navController
             )
         }
         is FoodDetailViewModel.ViewState.Failure ->
             FoodDetailUI(
                 modifier = modifier,
-                onBackClick = { navController.navigate(Screen.FoodList.route)},
+                onBackClick = { navController.navigate(FoodList)},
                 onDeleteClick = {},
                 foodDetail = null,
-                statusColor = null
+                statusColor = null,
+                navController
             )
         else -> {}
     }
@@ -140,6 +133,7 @@ private fun FoodDetailUI(
     onDeleteClick: () -> Unit,
     foodDetail: FoodDetailItem?,
     statusColor: ColorFamily?,
+    navController: NavController
 ) {
     Column(
         modifier = modifier
@@ -250,6 +244,30 @@ private fun FoodDetailUI(
                 label = "Commentaire",
                 value = foodDetail.comment?.takeIf { it.isNotBlank() } ?: "Saisir"
             )
+
+            Surface(
+                onClick = {
+                    navController.navigate(FoodCreateUpdate(foodId = foodDetail.id)
+                    )
+                },
+                shape = RoundedCornerShape(50.dp),
+                color = statusColor.colorContainer,
+                modifier = modifier
+            ) {
+                Text(
+                    text = "Modifier information(s)",
+                    style = MaterialTheme.typography.labelLarge.copy(
+                    ),
+                    color = statusColor.onColorContainer,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .padding(vertical = 10.dp)
+                        .fillMaxWidth()
+                )
+            }
+
+
+
         } else{
             Row(
                 horizontalArrangement = Arrangement.spacedBy(12.dp),

@@ -13,11 +13,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.navigation.toRoute
+import com.vlt.zeroperte.ui.FoodCreateUpdate
 import com.vlt.zeroperte.ui.theme.ZeroPerteTheme
 import com.vlt.zeroperte.ui.FoodCreateUpdateScreen
+import com.vlt.zeroperte.ui.FoodDetail
 import com.vlt.zeroperte.ui.FoodDetailScreen
+import com.vlt.zeroperte.ui.FoodList
 import com.vlt.zeroperte.ui.FoodListScreen
-import com.vlt.zeroperte.ui.Screen
+import com.vlt.zeroperte.ui.Parameters
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -34,22 +38,21 @@ class MainActivity : ComponentActivity() {
                 {
                     NavHost(
                         navController = navController,
-                        startDestination = Screen.FoodList.route
+                        startDestination = FoodList
                     ){
-                        composable(Screen.FoodList.route){
+                        composable<FoodList>{
                             FoodListScreen(modifier = Modifier.fillMaxSize(), navController = navController)
                         }
-                        composable(Screen.FoodDetail.route,
-                            arguments = listOf(navArgument("foodId")
-                            { type = NavType.LongType })){ backStackEntry ->
-                            val foodId = backStackEntry.arguments?.getLong("foodId") ?: return@composable
-                            FoodDetailScreen(foodId = foodId, navController = navController)
+                        composable<FoodDetail>{ backStackEntry ->
+                            val args = backStackEntry.toRoute<FoodDetail>()
+                            FoodDetailScreen(foodId = args.foodId, navController = navController)
                         }
-                        composable(Screen.FoodCreateUpdate.route){backStackEntry ->
-                            val foodId = backStackEntry.arguments?.getString("foodId")
-                            FoodCreateUpdateScreen(navController = navController)
+                        composable<FoodCreateUpdate>{ backStackEntry ->
+                            val args = backStackEntry.toRoute<FoodCreateUpdate>()
+
+                            FoodCreateUpdateScreen(foodId = args.foodId, navController = navController)
                         }
-                        composable(Screen.Parameters.route){}
+                        composable<Parameters>{}
 
                     }
 

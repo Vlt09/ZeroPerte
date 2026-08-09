@@ -39,6 +39,9 @@ import ch.benlu.composeform.fields.TextField
 import ch.benlu.composeform.formatters.dateLong
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.ZoneId
+import java.util.Date
 
 /**
  * Écran d'ajout/modification d'aliment.
@@ -54,34 +57,31 @@ import kotlinx.coroutines.launch
 fun FoodCreateUpdateScreen(
     modifier: Modifier = Modifier,
     viewModel: FoodCreateUpdateViewModel = hiltViewModel(),
-    onCancelClick: () -> Unit = {},
-    onSaveClick: () -> Unit = {},
+    foodId: Long?,
     navController: NavHostController
 ) {
-
-
-    var foodNameTest by remember { mutableStateOf("") }
-    var expiryDateText by remember { mutableStateOf("") }
-    var purchaseDateText by remember { mutableStateOf("") }
-    var brandText by remember { mutableStateOf("") }
-    var commentText by remember { mutableStateOf("") }
-    var categoryExpanded by remember { mutableStateOf(false) }
-    var selectedCategory by remember { mutableStateOf("") }
-    var amountInput by remember { mutableStateOf("0") }
 
     val viewState = viewModel.viewState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope() // Use when User trigger Saved button
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(viewState.value) {
+    LaunchedEffect(viewState.value, foodId) {
         when (viewState.value) {
-            is FoodCreateUpdateViewModel.ViewState.Modify -> {
+            is FoodCreateUpdateViewModel.ViewState.Create -> {
                 snackbarHostState.showSnackbar("Aliment enregistré")
+            }
+            FoodCreateUpdateViewModel.ViewState.Updated -> {
+                snackbarHostState.showSnackbar("Aliment mis à jour")
             }
             FoodCreateUpdateViewModel.ViewState.Failure -> {
                 snackbarHostState.showSnackbar("Problème pendant l'enregistrement de l'aliment")
             }
             FoodCreateUpdateViewModel.ViewState.Waiting -> {}
+            else -> {}
+        }
+
+        if(foodId != null){
+            viewModel.fetchFood(foodId)
         }
     }
 
@@ -107,7 +107,7 @@ fun FoodCreateUpdateScreen(
 
                     Box(){
                     IconButton(onClick = {
-                        navController.navigate(Screen.FoodList.route)
+                        navController.navigate(FoodList)
                     }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
@@ -136,7 +136,7 @@ fun FoodCreateUpdateScreen(
                     IconButton(onClick = {
                         coroutineScope.launch {
                             viewModel.save()
-                            navController.navigate(Screen.FoodList.route)
+                            navController.navigate(FoodList)
                         }
                     }, modifier = Modifier.fillMaxWidth()) {
                         Icon(
@@ -152,94 +152,121 @@ fun FoodCreateUpdateScreen(
 
             }
 
-            // Entry name
-            TextField(
-                label = "Nom de l'aliment",
-                form = viewModel.form,
-                fieldState = viewModel.form.name
-            ).Field()
+            when (viewState.value) {
+                is FoodCreateUpdateViewModel.ViewState.Update -> {
+                    val updateContent = viewState.value as FoodCreateUpdateViewModel.ViewState.Update
 
-            // --- Date de péremption (obligatoire) ---
-            Box() {
-                DateField(
-                    label = "Date de péremption",
-                    form = viewModel.form,
-                    fieldState = viewModel.form.expiryDate,
-                    formatter = ::dateLong,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 16.dp)
-                ).Field()
+                    viewModel.form.name.state.value = updateContent.resource.name
+                    viewModel.form.expiryDate.state.value =
+                        localDateToDate(updateContent.resource.expiryDate)
+                    viewModel.form.brand.state.value = updateContent.resource.brand
+                    viewModel.form.purchasedDate.state.value = if (updateContent.resource.datePurchased != null)
+                        localDateToDate(updateContent.resource.datePurchased) else null
+                    viewModel.form.amount.state.value = updateContent.resource.amount.toString()
+                    viewModel.form.comment.state.value = updateContent.resource.comment
+                    viewModel.form.category.state.value = updateContent.resource.category
 
-                IconButton(
-                    onClick = { /* TODO: ouvrir l'appareil photo */ },
-                    modifier = Modifier.align(Alignment.CenterEnd)
-                        .padding(bottom = 8.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Filled.PhotoCamera,
-                        contentDescription = "Prendre une photo de la date de péremption"
-                    )
+
                 }
+                else -> {}
             }
 
-
-            // --- Date d'achat (optionnelle) ---
-            DateField(
-                label = "Date d'achat (optionnelle)",
-                form = viewModel.form,
-                fieldState = viewModel.form.purchasedDate,
-                formatter = ::dateLong,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp)
-            ).Field()
-
-            // Amount
-            TextField(
-                label = "Quantité (optionnelle)",
-                form = viewModel.form,
-                fieldState = viewModel.form.amount,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp)
-
-            ).Field()
-
-
-            // --- Marque (optionnelle) ---
-            TextField(
-                label = "Marque (optionnelle)",
-                form = viewModel.form,
-                fieldState = viewModel.form.brand,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp)
-            ).Field()
-
-            // --- Marque (optionnelle) ---
-            TextField(
-                label = "Catégorie (optionnelle)",
-                form = viewModel.form,
-                fieldState = viewModel.form.category,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp)
-            ).Field()
-
-            // --- Commentaire (optionnel) ---
-            TextField(
-                label = "Commentaire (optionnelle)",
-                form = viewModel.form,
-                fieldState = viewModel.form.comment,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 16.dp)
-            ).Field()
+            FormFieldsUi(viewModel)
 
         }
     }
 
+}
+
+@Composable
+private fun FormFieldsUi(
+    viewModel: FoodCreateUpdateViewModel,
+) {
+    // Entry name
+    TextField(
+        label = "Nom de l'aliment",
+        form = viewModel.form,
+        fieldState = viewModel.form.name
+    ).Field()
+
+    // --- Date de péremption (obligatoire) ---
+    Box() {
+        DateField(
+            label = "Date de péremption",
+            form = viewModel.form,
+            fieldState = viewModel.form.expiryDate,
+            formatter = ::dateLong,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp)
+        ).Field()
+
+        IconButton(
+            onClick = { /* TODO: ouvrir l'appareil photo */ },
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(bottom = 8.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.PhotoCamera,
+                contentDescription = "Prendre une photo de la date de péremption"
+            )
+        }
+    }
+
+
+    // --- Date d'achat (optionnelle) ---
+    DateField(
+        label = "Date d'achat (optionnelle)",
+        form = viewModel.form,
+        fieldState = viewModel.form.purchasedDate,
+        formatter = ::dateLong,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp)
+    ).Field()
+
+    // Amount
+    TextField(
+        label = "Quantité (optionnelle)",
+        form = viewModel.form,
+        fieldState = viewModel.form.amount,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp)
+
+    ).Field()
+
+
+    // --- Marque (optionnelle) ---
+    TextField(
+        label = "Marque (optionnelle)",
+        form = viewModel.form,
+        fieldState = viewModel.form.brand,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp)
+    ).Field()
+
+    // --- Marque (optionnelle) ---
+    TextField(
+        label = "Catégorie (optionnelle)",
+        form = viewModel.form,
+        fieldState = viewModel.form.category,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp)
+    ).Field()
+
+    // --- Commentaire (optionnel) ---
+    TextField(
+        label = "Commentaire (optionnelle)",
+        form = viewModel.form,
+        fieldState = viewModel.form.comment,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp)
+    ).Field()
 }
 
 @Composable
@@ -284,3 +311,5 @@ internal fun SaveErrorMessage(
         )
     }
 }
+
+fun localDateToDate(localDate: LocalDate): Date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant())

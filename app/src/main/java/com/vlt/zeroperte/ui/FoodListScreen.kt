@@ -72,6 +72,7 @@ import androidx.navigation.NavHostController
 import com.vlt.zeroperte.business.FoodStatusCalculator
 import com.vlt.zeroperte.data.model.FoodDto
 import com.vlt.zeroperte.data.model.domain.FoodStatus
+import com.vlt.zeroperte.ui.theme.ColorFamily
 import com.vlt.zeroperte.ui.theme.extendedDark
 import com.vlt.zeroperte.ui.theme.extendedLight
 import com.vlt.zeroperte.utils.FoodMapper
@@ -272,7 +273,7 @@ internal fun EmptyFoodItem(modifier: Modifier = Modifier) {
 internal fun AddFoodFab(onClick: () -> Unit = {}, navController: NavHostController) {
     FloatingActionButton(
         onClick = {
-            navController.navigate(Screen.FoodCreateUpdate.route)
+            navController.navigate(FoodCreateUpdate(null))
         }
     ) {
         Icon(Icons.Filled.Add, contentDescription = "Ajouter un aliment")
@@ -312,9 +313,7 @@ internal fun FoodCard(
         modifier = modifier
             .padding(8.dp)
             .clickable {
-                navController.navigate(
-                    Screen.FoodDetail.createRoute(foodId = foodCardItem.dtoRef.id)
-                )
+                navController.navigate(FoodDetail(foodId = foodCardItem.dtoRef.id))
             },
     ) {
         Row(
@@ -434,7 +433,7 @@ internal fun FoodStatusFilterRow(
 @Composable
 private fun FilterStatusButton(
     text: String,
-    colorFamily: com.vlt.zeroperte.ui.theme.ColorFamily,
+    colorFamily: ColorFamily,
     selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
