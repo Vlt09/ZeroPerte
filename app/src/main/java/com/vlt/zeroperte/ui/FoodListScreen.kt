@@ -378,9 +378,10 @@ internal fun FoodCard(
                 IconButton(onClick = onDeleteClick, modifier = Modifier.fillMaxWidth()){
                     Icon(
                         imageVector = Icons.Filled.Delete,
-                        contentDescription = "Photo Aliment",
+                        contentDescription = "Delete button",
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.size(30.dp)
+                        modifier = Modifier.padding(bottom = 12.dp)
+                            .size(30.dp)
                     )
                 }
             }

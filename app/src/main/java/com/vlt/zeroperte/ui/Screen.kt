@@ -2,6 +2,10 @@ package com.vlt.zeroperte.ui
 
 import kotlinx.serialization.Serializable
 
+
+@Serializable
+object Home
+
 @Serializable
 object FoodList
 

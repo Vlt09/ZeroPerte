@@ -21,6 +21,8 @@ import com.vlt.zeroperte.ui.FoodDetail
 import com.vlt.zeroperte.ui.FoodDetailScreen
 import com.vlt.zeroperte.ui.FoodList
 import com.vlt.zeroperte.ui.FoodListScreen
+import com.vlt.zeroperte.ui.Home
+import com.vlt.zeroperte.ui.HomeScreen
 import com.vlt.zeroperte.ui.Parameters
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -38,8 +40,12 @@ class MainActivity : ComponentActivity() {
                 {
                     NavHost(
                         navController = navController,
-                        startDestination = FoodList
+                        startDestination = Home
                     ){
+                        composable<Home> {
+                            HomeScreen(navController = navController)
+                        }
+
                         composable<FoodList>{
                             FoodListScreen(modifier = Modifier.fillMaxSize(), navController = navController)
                         }
