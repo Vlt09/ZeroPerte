@@ -8,11 +8,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
 import androidx.navigation.toRoute
 import com.vlt.zeroperte.ui.FoodCreateUpdate
 import com.vlt.zeroperte.ui.theme.ZeroPerteTheme
@@ -35,6 +33,7 @@ class MainActivity : ComponentActivity() {
             val navController = rememberNavController()
             ZeroPerteTheme {
 
+                val activity = this
                 Surface(modifier = Modifier.fillMaxSize(),
                         color = MaterialTheme.colorScheme.background)
                 {
@@ -53,10 +52,12 @@ class MainActivity : ComponentActivity() {
                             val args = backStackEntry.toRoute<FoodDetail>()
                             FoodDetailScreen(foodId = args.foodId, navController = navController)
                         }
+
                         composable<FoodCreateUpdate>{ backStackEntry ->
                             val args = backStackEntry.toRoute<FoodCreateUpdate>()
 
-                            FoodCreateUpdateScreen(foodId = args.foodId, navController = navController)
+                            FoodCreateUpdateScreen(foodId = args.foodId, navController = navController,
+                            activity = activity)
                         }
                         composable<Parameters>{}
 

@@ -1,12 +1,15 @@
 package com.vlt.zeroperte.ui
 
 import android.Manifest
+import android.app.Activity
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.result.launch
+import androidx.camera.view.CameraController
+import androidx.camera.view.LifecycleCameraController
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -64,12 +68,21 @@ fun FoodCreateUpdateScreen(
     modifier: Modifier = Modifier,
     viewModel: FoodCreateUpdateViewModel = hiltViewModel(),
     foodId: Long?,
-    navController: NavHostController
+    navController: NavHostController,
+    activity: Activity
 ) {
 
     val viewState = viewModel.viewState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope() // Use when User trigger Saved button
     val snackbarHostState = remember { SnackbarHostState() }
+    val controller = remember {
+        LifecycleCameraController(activity.applicationContext)
+            .apply {
+                setEnabledUseCases(
+                    CameraController.IMAGE_CAPTURE
+                )
+            }
+    }
 
     LaunchedEffect(viewState.value, foodId) {
         when (viewState.value) {
@@ -180,7 +193,7 @@ fun FoodCreateUpdateScreen(
                 else -> {}
             }
 
-            FormFieldsUi(viewModel)
+            FormFieldsUi(viewModel, controller)
 
         }
     }
@@ -190,6 +203,7 @@ fun FoodCreateUpdateScreen(
 @Composable
 private fun FormFieldsUi(
     viewModel: FoodCreateUpdateViewModel,
+    controller: LifecycleCameraController,
 ) {
     // Entry name
     TextField(
@@ -210,10 +224,8 @@ private fun FormFieldsUi(
                 .padding(bottom = 16.dp)
         ).Field()
 
-        val launchCamera = rememberCameraLauncher{  }
-
         IconButton(
-            onClick = launchCamera,
+            onClick = { viewModel.onTakePhoto(controller) },
             modifier = Modifier
                 .align(Alignment.CenterEnd)
                 .padding(bottom = 8.dp)

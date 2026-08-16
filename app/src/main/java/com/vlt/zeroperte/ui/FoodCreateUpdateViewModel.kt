@@ -1,8 +1,17 @@
 package com.vlt.zeroperte.ui
 
+import android.app.Activity
+import android.app.Application
 import android.content.ContentValues.TAG
+import android.graphics.Bitmap
 import android.util.Log
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.ImageProxy
+import androidx.camera.view.LifecycleCameraController
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModel
+import com.vlt.zeroperte.business.DateRecognition
 import com.vlt.zeroperte.data.FoodRepository
 import com.vlt.zeroperte.data.model.FoodDto
 import com.vlt.zeroperte.utils.FoodMapper
@@ -16,24 +25,32 @@ import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
-class FoodCreateUpdateViewModel @Inject constructor(private val repository: FoodRepository) : ViewModel() {
+class FoodCreateUpdateViewModel @Inject constructor(
+    private val repository: FoodRepository,
+    private val application: Application,
+    private val dateRecognition: DateRecognition) : ViewModel() {
 
     sealed interface ViewState{
         data class Create(val resource : FoodDto) : ViewState
 
         data class Update(val resource : FoodDto) : ViewState
 
+        data class PhotoCaptured(
+            val photoBitmap: Bitmap
+        ) : ViewState
+
         data object Waiting : ViewState
 
-        data object Updated: ViewState
+        data object Updated: ViewState // When user submit his update
 
         data object Failure : ViewState
+
+        data object Capturing : ViewState
     }
 
     var form = FoodForm()
     private val _viewState = MutableStateFlow<ViewState>(ViewState.Waiting)
     val viewState = _viewState.asStateFlow()
-
 
     fun validate() {
         form.validate(true)
@@ -107,4 +124,20 @@ class FoodCreateUpdateViewModel @Inject constructor(private val repository: Food
         }
 
     }
+
+    fun onTakePhoto(controller: LifecycleCameraController){
+        controller.takePicture(
+            ContextCompat.getMainExecutor(application),
+            object : ImageCapture.OnImageCapturedCallback() {
+                override fun onCaptureSuccess(image: ImageProxy) {
+                    super.onCaptureSuccess(image)
+                }
+
+                override fun onError(exception: ImageCaptureException) {
+                    super.onError(exception)
+                }
+            }
+        )
+    }
+
 }
