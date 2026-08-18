@@ -1,19 +1,26 @@
 package com.vlt.zeroperte.ui
 
-import android.Manifest
 import android.app.Activity
-import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.result.launch
+import android.content.ContentValues.TAG
+import android.util.Log
+import androidx.camera.core.CameraSelector
 import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
+import android.view.ViewGroup
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.ImageProxy
+import androidx.camera.core.Preview
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -22,6 +29,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -33,25 +41,33 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import ch.benlu.composeform.fields.DateField
 import ch.benlu.composeform.fields.TextField
 import ch.benlu.composeform.formatters.dateLong
+import com.vlt.zeroperte.business.TextRecognitionHelper
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Date
+import java.util.concurrent.Executors
 
 /**
  * Écran d'ajout/modification d'aliment.
@@ -193,7 +209,7 @@ fun FoodCreateUpdateScreen(
                 else -> {}
             }
 
-            FormFieldsUi(viewModel, controller)
+            FormFieldsUi(viewModel, controller, viewState)
 
         }
     }
@@ -204,7 +220,11 @@ fun FoodCreateUpdateScreen(
 private fun FormFieldsUi(
     viewModel: FoodCreateUpdateViewModel,
     controller: LifecycleCameraController,
+    viewState: State<FoodCreateUpdateViewModel.ViewState>,
 ) {
+
+    var recognizedDate by remember { mutableStateOf("") }
+
     // Entry name
     TextField(
         label = "Nom de l'aliment",
@@ -224,8 +244,10 @@ private fun FormFieldsUi(
                 .padding(bottom = 16.dp)
         ).Field()
 
+        var showCameraDialog by remember { mutableStateOf(false) }
+
         IconButton(
-            onClick = { viewModel.onTakePhoto(controller) },
+            onClick = { showCameraDialog = true },
             modifier = Modifier
                 .align(Alignment.CenterEnd)
                 .padding(bottom = 8.dp)
@@ -234,6 +256,20 @@ private fun FormFieldsUi(
                 imageVector = Icons.Filled.PhotoCamera,
                 contentDescription = "Prendre une photo de la date de péremption"
             )
+        }
+
+        if (showCameraDialog) {
+            CameraBox {
+                recognizedDate = it
+                Log.i(TAG, "recognizedDate $recognizedDate")
+            }
+            /*CameraCaptureDialog(
+                controller = controller,
+                onDismiss = { showCameraDialog = false },
+                onPhotoTaken = {
+                    viewModel.onTakePhoto(controller)
+                }
+            )*/
         }
     }
 
@@ -335,48 +371,75 @@ internal fun SaveErrorMessage(
     }
 }
 
-/**
- * Returns a function to call (typically on a button click) that
- * handles the whole flow: checks the camera permission, requests it
- * if needed, then launches the camera and returns the result via
- * onPhotoTaken.
- *
- */
 @Composable
-fun rememberCameraLauncher(onPhotoTaken: (Bitmap?) -> Unit): () -> Unit {
+fun CameraBox(onTextRecognized: (String) -> Unit) {
     val context = LocalContext.current
-
-    val takePictureLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.TakePicturePreview()
-    ) { bitmap ->
-        onPhotoTaken(bitmap)
-    }
-
-    val permissionLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.RequestPermission()
-    ) { isGranted ->
-        if (isGranted) {
-            takePictureLauncher.launch()
-        } else {
-            Toast.makeText(
-                context,
-                "Autorisez la caméra dans les paramètres pour utiliser cette fonctionnalité",
-                Toast.LENGTH_SHORT
-            ).show()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val previewView = remember {
+        PreviewView(context).apply {
+            layoutParams = ViewGroup.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
         }
     }
+    val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
+    val imageCapture = remember { ImageCapture.Builder().build() }
+    val cameraExecutor = remember { Executors.newSingleThreadExecutor() }
+    // Bind camera
+    LaunchedEffect(Unit) {
+        try {
+            val cameraProvider = cameraProviderFuture.get()
+            val preview = Preview.Builder().build().apply {
+                surfaceProvider = previewView.surfaceProvider
+            }
+            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+            cameraProvider.unbindAll()
+            cameraProvider.bindToLifecycle(
+                lifecycleOwner,
+                cameraSelector,
+                preview,
+                imageCapture
+            )
+        } catch (e: Exception) {
+            Log.e("CameraBox", "Camera initialization failed", e)
+        }
+    }
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(2.dp, Color.Gray, RoundedCornerShape(16.dp))
+            .clip(RoundedCornerShape(16.dp))
+            .aspectRatio(1f)
+            .background(Color.Black)
+    ) {
+        AndroidView(
+            factory = { previewView },
+            modifier = Modifier.fillMaxSize()
+        )
+        Button(
+            onClick = {
+                imageCapture.takePicture(
+                    cameraExecutor,
+                    object : ImageCapture.OnImageCapturedCallback() {
+                        override fun onCaptureSuccess(image: ImageProxy) {
+                            TextRecognitionHelper.recognizeTextFromImage( image) {
+                                onTextRecognized(it)
+                            }
+                            Log.i("CameraPreview", "Capture sucess")
 
-    return {
-        when {
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.CAMERA
-            ) == PackageManager.PERMISSION_GRANTED -> {
-                takePictureLauncher.launch()
-            }
-            else -> {
-                permissionLauncher.launch(Manifest.permission.CAMERA)
-            }
+                        }
+                        override fun onError(exception: ImageCaptureException) {
+                            Log.e("CameraPreview", "Capture failed: ${exception.message}", exception)
+                        }
+                    }
+                )
+            },
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(12.dp)
+        ) {
+            Text("Capture")
         }
     }
 }
