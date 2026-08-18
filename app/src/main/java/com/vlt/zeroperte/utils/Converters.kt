@@ -9,6 +9,15 @@ import java.util.Date
 
 class Converters {
 
+  companion object {
+      fun fromStringDateToDate(dateString: String): Date {
+          val localDate = LocalDate.parse(dateString,
+              DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+
+          return Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant())
+      }
+  }
+
   internal val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
 
   @TypeConverter
@@ -20,4 +29,5 @@ class Converters {
   fun dateToStringDate(date: LocalDate?): String? {
     return date?.toString()
   }
+
 }

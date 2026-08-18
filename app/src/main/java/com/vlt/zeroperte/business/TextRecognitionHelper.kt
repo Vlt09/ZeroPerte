@@ -1,6 +1,7 @@
 package com.vlt.zeroperte.business
 
 import android.content.Context
+import android.util.Log
 import androidx.annotation.OptIn
 import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.core.ImageProxy
@@ -12,7 +13,7 @@ import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 object TextRecognitionHelper {
 
     @OptIn(ExperimentalGetImage::class)
-    fun recognizeTextFromImage(imageProxy: ImageProxy, onResult: (String) -> Unit) {
+    fun recognizeTextFromImage(imageProxy: ImageProxy, onResult: (String?) -> Unit) {
         val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
         val mediaImage = imageProxy.image
 
@@ -22,9 +23,7 @@ object TextRecognitionHelper {
             recognizer.process(image)
                 .addOnSuccessListener { visionText ->
                     val date = recognizeDatePattern(visionText)
-                    if (date != null) {
-                        onResult(date)
-                    }
+                    onResult(date)
                 }
                 .addOnFailureListener { exception ->
                     onResult("Recognition failed: ${exception.localizedMessage}")

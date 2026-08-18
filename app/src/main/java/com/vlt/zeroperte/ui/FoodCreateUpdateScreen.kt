@@ -62,6 +62,7 @@ import ch.benlu.composeform.fields.DateField
 import ch.benlu.composeform.fields.TextField
 import ch.benlu.composeform.formatters.dateLong
 import com.vlt.zeroperte.business.TextRecognitionHelper
+import com.vlt.zeroperte.utils.Converters
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -260,16 +261,13 @@ private fun FormFieldsUi(
 
         if (showCameraDialog) {
             CameraBox {
-                recognizedDate = it
-                Log.i(TAG, "recognizedDate $recognizedDate")
-            }
-            /*CameraCaptureDialog(
-                controller = controller,
-                onDismiss = { showCameraDialog = false },
-                onPhotoTaken = {
-                    viewModel.onTakePhoto(controller)
+                if (it != null){
+                    recognizedDate = it
+                    viewModel.form.expiryDate.state.value = Converters.fromStringDateToDate(it)
+                    Log.i(TAG, "recognizedDate $recognizedDate")
                 }
-            )*/
+                showCameraDialog = false
+            }
         }
     }
 
@@ -372,7 +370,7 @@ internal fun SaveErrorMessage(
 }
 
 @Composable
-fun CameraBox(onTextRecognized: (String) -> Unit) {
+fun CameraBox(onTextRecognized: (String?) -> Unit) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val previewView = remember {
