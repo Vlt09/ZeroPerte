@@ -19,24 +19,29 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.vlt.zeroperte.ui.Home
+import com.vlt.zeroperte.ui.ViewModel.ParametersViewModel
 import kotlin.math.roundToInt
 
 @Composable
 fun ParametersScreen(
     modifier: Modifier = Modifier,
-    navController: NavHostController
-) {
-    var notificationsEnabled by remember { mutableStateOf(true) }
-    var alertDelayDays by remember { mutableFloatStateOf(3f) }
+    navController: NavHostController,
+    viewModel: ParametersViewModel = hiltViewModel()
+    ) {
+
+    val parameterUiState = viewModel.uiState.collectAsStateWithLifecycle()
+    val notifEnable = (parameterUiState.value as ParametersViewModel.ParametersUiState.Content).notificationsEnabled
+    val notifDelay = (parameterUiState.value as ParametersViewModel.ParametersUiState.Content).notifDelay
 
     Column(modifier = modifier.fillMaxWidth()) {
         ParametersHeader(navController = navController)
@@ -66,8 +71,8 @@ fun ParametersScreen(
                 }
 
                 Switch(
-                    checked = notificationsEnabled,
-                    onCheckedChange = { notificationsEnabled = it },
+                    checked = notifEnable,
+                    onCheckedChange = { viewModel.updateNotifActivation() },
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = MaterialTheme.colorScheme.onPrimary,
                         checkedTrackColor = MaterialTheme.colorScheme.primary
@@ -81,7 +86,7 @@ fun ParametersScreen(
             )
 
             // Warning period
-            val delayTextColor = if (notificationsEnabled) {
+            val delayTextColor = if (notifEnable) {
                 MaterialTheme.colorScheme.onBackground
             } else {
                 MaterialTheme.colorScheme.onSurfaceVariant
@@ -94,18 +99,18 @@ fun ParametersScreen(
             )
 
             Text(
-                text = "Être alerté ${alertDelayDays.roundToInt()} jour(s) avant la date de péremption",
+                text = "Être alerté ${notifDelay} jour(s) avant la date de péremption",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 4.dp, bottom = 8.dp)
             )
 
             Slider(
-                value = alertDelayDays,
-                onValueChange = { alertDelayDays = it },
+                value = notifDelay.toFloat(),
+                onValueChange = { viewModel.updateNotifDelay(it.toInt()) },
                 valueRange = 1f..14f,
                 steps = 12,
-                enabled = notificationsEnabled,
+                enabled = notifEnable,
                 modifier = Modifier.fillMaxWidth()
             )
         }
