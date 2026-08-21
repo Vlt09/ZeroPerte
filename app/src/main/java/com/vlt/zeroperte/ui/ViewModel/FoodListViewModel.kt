@@ -1,4 +1,4 @@
-package com.vlt.zeroperte.ui
+package com.vlt.zeroperte.ui.ViewModel
 
 import android.content.ContentValues.TAG
 import android.util.Log

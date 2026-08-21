@@ -1,7 +1,6 @@
-package com.vlt.zeroperte.ui
+package com.vlt.zeroperte.ui.Composable
 
 import android.content.ContentValues.TAG
-import android.os.Bundle
 import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -38,6 +37,7 @@ import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.NoFood
 import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material3.Card
@@ -65,13 +65,16 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.os.bundleOf
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.vlt.zeroperte.business.FoodStatusCalculator
 import com.vlt.zeroperte.data.model.FoodDto
 import com.vlt.zeroperte.data.model.domain.FoodStatus
+import com.vlt.zeroperte.ui.FoodCreateUpdate
+import com.vlt.zeroperte.ui.FoodDetail
+import com.vlt.zeroperte.ui.Home
+import com.vlt.zeroperte.ui.ViewModel.FoodListViewModel
 import com.vlt.zeroperte.ui.theme.ColorFamily
 import com.vlt.zeroperte.ui.theme.extendedDark
 import com.vlt.zeroperte.ui.theme.extendedLight
@@ -165,7 +168,7 @@ private fun FoodListLazyColumn(
                 horizontalArrangement = Arrangement.Start,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                FoodHeader(modifier)
+                FoodHeader(modifier, navController)
             }
             FoodStatusFilterRow(filterState = filterState,
                 onStatusClick = {foodStatus -> viewModel.toggleStatus(foodStatus)})
@@ -281,17 +284,33 @@ internal fun AddFoodFab(onClick: () -> Unit = {}, navController: NavHostControll
 }
 
 @Composable
-internal fun FoodHeader(modifier: Modifier = Modifier) {
-    Text(
-        text = "Aliments",
-        style = MaterialTheme.typography.headlineMedium,
-        color = MaterialTheme.colorScheme.onBackground,
+internal fun FoodHeader(modifier: Modifier = Modifier, navController: NavHostController) {
+    Box(
         modifier = modifier
-            .padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp),
-        textAlign = TextAlign.Start
-    )
-}
+            .fillMaxWidth()
+            .padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp)
+    ) {
+        Text(
+            text = "Aliments",
+            style = MaterialTheme.typography.headlineMedium,
+            color = MaterialTheme.colorScheme.onBackground,
+            textAlign = TextAlign.Start,
+            modifier = Modifier.align(Alignment.CenterStart)
+        )
 
+        IconButton(
+            onClick = { navController.navigate(Home) },
+            modifier = Modifier.align(Alignment.CenterEnd)
+                                .padding(top = 7.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.Home,
+                contentDescription = "Retour à l'accueil",
+                tint = MaterialTheme.colorScheme.onBackground
+            )
+        }
+    }
+}
 @Composable
 internal fun FoodCard(
     modifier: Modifier = Modifier, foodCardItem: FoodCardItem,

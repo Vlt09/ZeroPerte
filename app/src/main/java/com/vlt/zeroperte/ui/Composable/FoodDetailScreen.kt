@@ -1,4 +1,4 @@
-package com.vlt.zeroperte.ui
+package com.vlt.zeroperte.ui.Composable
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -41,6 +41,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.vlt.zeroperte.business.FoodStatusCalculator
+import com.vlt.zeroperte.ui.FoodCreateUpdate
+import com.vlt.zeroperte.ui.FoodList
+import com.vlt.zeroperte.ui.ViewModel.FoodDetailViewModel
 import com.vlt.zeroperte.ui.theme.ColorFamily
 import com.vlt.zeroperte.ui.theme.extendedDark
 import com.vlt.zeroperte.ui.theme.extendedLight
@@ -247,7 +250,8 @@ private fun FoodDetailUI(
 
             Surface(
                 onClick = {
-                    navController.navigate(FoodCreateUpdate(foodId = foodDetail.id)
+                    navController.navigate(
+                        FoodCreateUpdate(foodId = foodDetail.id)
                     )
                 },
                 shape = RoundedCornerShape(50.dp),

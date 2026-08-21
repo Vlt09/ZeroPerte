@@ -14,14 +14,15 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.vlt.zeroperte.ui.FoodCreateUpdate
 import com.vlt.zeroperte.ui.theme.ZeroPerteTheme
-import com.vlt.zeroperte.ui.FoodCreateUpdateScreen
+import com.vlt.zeroperte.ui.Composable.FoodCreateUpdateScreen
 import com.vlt.zeroperte.ui.FoodDetail
-import com.vlt.zeroperte.ui.FoodDetailScreen
+import com.vlt.zeroperte.ui.Composable.FoodDetailScreen
 import com.vlt.zeroperte.ui.FoodList
-import com.vlt.zeroperte.ui.FoodListScreen
+import com.vlt.zeroperte.ui.Composable.FoodListScreen
 import com.vlt.zeroperte.ui.Home
-import com.vlt.zeroperte.ui.HomeScreen
+import com.vlt.zeroperte.ui.Composable.HomeScreen
 import com.vlt.zeroperte.ui.Parameters
+import com.vlt.zeroperte.ui.Composable.ParametersScreen
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -59,7 +60,9 @@ class MainActivity : ComponentActivity() {
                             FoodCreateUpdateScreen(foodId = args.foodId, navController = navController,
                             activity = activity)
                         }
-                        composable<Parameters>{}
+                        composable<Parameters>{backStackEntry ->
+                            ParametersScreen(navController = navController)
+                        }
 
                     }
 

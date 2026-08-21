@@ -1,4 +1,4 @@
-package com.vlt.zeroperte.ui
+package com.vlt.zeroperte.ui.Composable
 
 import android.app.Activity
 import android.content.ContentValues.TAG
@@ -62,6 +62,8 @@ import ch.benlu.composeform.fields.DateField
 import ch.benlu.composeform.fields.TextField
 import ch.benlu.composeform.formatters.dateLong
 import com.vlt.zeroperte.business.TextRecognitionHelper
+import com.vlt.zeroperte.ui.FoodList
+import com.vlt.zeroperte.ui.ViewModel.FoodCreateUpdateViewModel
 import com.vlt.zeroperte.utils.Converters
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch

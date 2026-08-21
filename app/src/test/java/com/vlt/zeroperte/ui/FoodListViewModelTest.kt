@@ -3,9 +3,8 @@ package com.vlt.zeroperte.ui
 import com.vlt.zeroperte.data.FakeFoodRepository
 import com.vlt.zeroperte.data.model.Food
 import com.vlt.zeroperte.data.model.domain.FoodStatus
+import com.vlt.zeroperte.ui.ViewModel.FoodListViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest
