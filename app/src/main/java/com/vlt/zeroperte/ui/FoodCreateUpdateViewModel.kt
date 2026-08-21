@@ -20,7 +20,7 @@ class FoodCreateUpdateViewModel @Inject constructor(
     private val repository: FoodRepository) : ViewModel() {
 
     sealed interface ViewState{
-        data class Create(val resource : FoodDto) : ViewState
+        data object Create : ViewState
 
         data class Update(val resource : FoodDto) : ViewState
 
@@ -50,8 +50,13 @@ class FoodCreateUpdateViewModel @Inject constructor(
 
             // Room treat 0 as not-set while inserting the item
             var id: Long = 0
+
+
             if (_viewState.value is ViewState.Update){
                 id = (_viewState.value as ViewState.Update).resource.id
+            }
+            else{
+                _viewState.update { ViewState.Create }
             }
 
             val foodDto = FoodDto(
@@ -65,22 +70,24 @@ class FoodCreateUpdateViewModel @Inject constructor(
                 id = id
             )
 
-            Log.d(TAG, "Enregistrement de l'aliment : $foodDto")
+            Log.d("CreateUpdateVM", "Enregistrement de l'aliment : $foodDto")
 
             try {
 
                 when(_viewState.value) {
                     is ViewState.Create -> {
                         repository.create(foodDto)
-                        _viewState.update { ViewState.Create(foodDto) }
-                        Log.i(TAG, "Aliment enregistré avec succès : id=${foodDto}")
+                        Log.i("CreateUpdateVM",
+                            "Aliment enregistré avec succès : id=${foodDto}")
                     }
                     is ViewState.Update -> {
                         repository.update(foodDto)
                         _viewState.update { ViewState.Updated }
-                        Log.i(TAG, "Aliment update avec succès : id=${foodDto}")
+                        Log.i("CreateUpdateVM",
+                            "Aliment update avec succès : id=${foodDto}")
                     }
-                    else -> Log.i(TAG, "Erreur embranchement else impossible")
+                    else -> Log.i("CreateUpdateVM",
+                        "Erreur embranchement else impossible ${_viewState.value}")
 
                 }
             } catch (e: Exception) {
