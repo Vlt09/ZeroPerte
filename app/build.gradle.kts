@@ -114,4 +114,6 @@ dependencies {
     implementation("androidx.camera:camera-lifecycle:\$CAMERAX_VERSION")
     implementation("androidx.camera:camera-view:\$CAMERAX_VERSION")
 
+    implementation ("androidx.work:work-runtime-ktx:2.11.2")
+
 }

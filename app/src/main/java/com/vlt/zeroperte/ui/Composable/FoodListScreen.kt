@@ -313,7 +313,8 @@ internal fun FoodHeader(modifier: Modifier = Modifier, navController: NavHostCon
 }
 @Composable
 internal fun FoodCard(
-    modifier: Modifier = Modifier, foodCardItem: FoodCardItem,
+    modifier: Modifier = Modifier,
+    foodCardItem: FoodCardItem,
     onDeleteClick: () -> Unit,
     navController: NavHostController
 ) {

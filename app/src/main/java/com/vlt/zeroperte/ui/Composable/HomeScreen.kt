@@ -1,5 +1,10 @@
 package com.vlt.zeroperte.ui.Composable
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -22,13 +27,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavHostController
 import com.vlt.zeroperte.ui.FoodCreateUpdate
 import com.vlt.zeroperte.ui.FoodList
@@ -78,6 +86,13 @@ fun HomeScreen(
     navController: NavHostController,
     menuItems: List<HomeMenuItem> = defaultHomeMenuItems
 ) {
+
+    RuntimePermissionsDialog(
+        Manifest.permission.POST_NOTIFICATIONS,
+        onPermissionDenied = {},
+        onPermissionGranted = {},
+    )
+
     Column(modifier = modifier.fillMaxSize()) {
         Text(
             text = "Accueil",
@@ -163,5 +178,37 @@ private fun resolveColors(role: HomeCardColorRole): Pair<Color, Color> {
             MaterialTheme.colorScheme.tertiaryContainer to MaterialTheme.colorScheme.onTertiaryContainer
         HomeCardColorRole.Error ->
             MaterialTheme.colorScheme.errorContainer to MaterialTheme.colorScheme.onErrorContainer
+    }
+}
+
+@Composable
+fun RuntimePermissionsDialog(
+    permission: String,
+    onPermissionGranted: () -> Unit,
+    onPermissionDenied: () -> Unit,
+) {
+
+    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+
+        if (ContextCompat.checkSelfPermission(
+                LocalContext.current,
+                permission) != PackageManager.PERMISSION_GRANTED) {
+
+            val requestLocationPermissionLauncher =
+                rememberLauncherForActivityResult(
+                    ActivityResultContracts.RequestPermission()
+                ) { isGranted: Boolean ->
+
+                    if (isGranted) {
+                        onPermissionGranted()
+                    } else {
+                        onPermissionDenied()
+                    }
+                }
+
+            SideEffect {
+                requestLocationPermissionLauncher.launch(permission)
+            }
+        }
     }
 }

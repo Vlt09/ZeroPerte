@@ -30,7 +30,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.vlt.zeroperte.ui.Home
 import com.vlt.zeroperte.ui.ViewModel.ParametersViewModel
-import kotlin.math.roundToInt
 
 @Composable
 fun ParametersScreen(
