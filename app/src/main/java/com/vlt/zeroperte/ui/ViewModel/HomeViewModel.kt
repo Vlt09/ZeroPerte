@@ -6,11 +6,13 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.vlt.zeroperte.business.ZeroPerteNotifWorker
+import com.vlt.zeroperte.data.FoodRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.concurrent.TimeUnit
+import javax.inject.Inject
 
 @HiltViewModel
-class HomeViewModel : ViewModel() {
+class HomeViewModel @Inject constructor() : ViewModel() {
     private lateinit var workManager: WorkManager
     private val constraints = Constraints.Builder()
         .setRequiresBatteryNotLow(true)

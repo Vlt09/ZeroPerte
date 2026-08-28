@@ -60,6 +60,7 @@ dependencies {
     implementation(libs.androidx.compose.foundation)
     implementation(libs.ads.mobile.sdk)
     implementation(libs.androidx.camera.view)
+    implementation(libs.androidx.work.testing)
     testImplementation(libs.junit)
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
     androidTestImplementation(libs.androidx.junit)

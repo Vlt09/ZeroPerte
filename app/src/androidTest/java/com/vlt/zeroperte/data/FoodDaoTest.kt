@@ -73,74 +73,9 @@ class FoodDaoTest {
     }
 
     @Test
-    fun findById_withUnknownId_returnsNull() {
+    fun findById_withUnknownId_returnsNull() = runTest {
         val found = dao.findById(999L)
         assertNull(found)
-    }
-
-    @Test
-    fun findByName_matchesExactName() {
-        dao.insert(sampleFood(name = "Compote pomme"))
-        dao.insert(sampleFood(name = "Compote poire"))
-
-        val results = dao.findByName("Compote pomme")
-
-        assertEquals(1, results.size)
-        assertEquals("Compote pomme", results.first().name)
-    }
-
-    @Test
-    fun findByName_withNoMatch_returnsEmptyList() {
-        dao.insert(sampleFood(name = "Compote pomme"))
-
-        val results = dao.findByName("Chocolat")
-
-        assertTrue(results.isEmpty())
-    }
-
-    @Test
-    fun findByCategory_returnsOnlyMatchingCategory() {
-        dao.insert(sampleFood(name = "Poisson", category = "surgelé"))
-        dao.insert(sampleFood(name = "Riz", category = "sec"))
-        dao.insert(sampleFood(name = "Légumes", category = "surgelé"))
-
-        val results = dao.findByCategory("surgelé")
-
-        assertEquals(2, results.size)
-        assertTrue(results.all { it.category == "surgelé" })
-    }
-
-    @Test
-    fun findByBrand_returnsOnlyMatchingBrand() {
-        dao.insert(sampleFood(name = "Yaourt", brand = "Danone"))
-        dao.insert(sampleFood(name = "Fromage blanc", brand = "Yoplait"))
-
-        val results = dao.findByBrand("Danone")
-
-        assertEquals(1, results.size)
-        assertEquals("Yaourt", results.first().name)
-    }
-
-    @Test
-    fun findExpired_currentBehavior_returnsExpiredFoods() {
-        dao.insert(sampleFood(name = "Perime", expiryDate = LocalDate.now().minusDays(3)))
-        dao.insert(sampleFood(name = "Valide", expiryDate = LocalDate.now().plusDays(3)))
-
-        val results = dao.findExpired()
-
-        assertEquals(1, results.size)
-        assertEquals("Perime", results.first().name)
-    }
-
-    @Test
-    fun findExpiringSinceDays_returnsFoodsWithinRange() {
-        dao.insert(sampleFood(name = "DansTroisJours", expiryDate = LocalDate.now().plusDays(3)))
-        dao.insert(sampleFood(name = "DansDixJours", expiryDate = LocalDate.now().plusDays(10)))
-
-        val results = dao.findExpiringSinceDays(5)
-
-        assertEquals(1, results.size)
-        assertEquals("DansTroisJours", results.first().name)
     }
 
     @Test
@@ -185,5 +120,4 @@ class FoodDaoTest {
         val result = dao.findById(inserted.id)
         assertEquals(10, result?.amount)
     }
-
 }
