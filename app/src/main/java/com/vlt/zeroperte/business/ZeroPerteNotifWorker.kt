@@ -14,22 +14,28 @@ import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat.getSystemService
+import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.ForegroundInfo
+import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.vlt.zeroperte.MainActivity
 import com.vlt.zeroperte.R
 import com.vlt.zeroperte.data.FoodRepository
 import com.vlt.zeroperte.data.model.domain.FoodStatus
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.toList
 import javax.inject.Inject
 import kotlin.properties.Delegates
 
-class ZeroPerteNotifWorker @Inject constructor(private val appContext: Context,
-                                          params: WorkerParameters,
-                                          private val repository: FoodRepository): CoroutineWorker(appContext, params) {
+@HiltWorker
+class ZeroPerteNotifWorker @AssistedInject constructor(@Assisted private val appContext: Context,
+                                                       @Assisted params: WorkerParameters,
+                                                       private val repository: FoodRepository
+                                                       ): CoroutineWorker(appContext, params) {
 
     private val notificationChannelId = "ZeroPerteNotificationChannelId"
 
@@ -101,6 +107,7 @@ class ZeroPerteNotifWorker @Inject constructor(private val appContext: Context,
             }
         }
 
+        Log.i("Notif", "Success")
         return Result.success()
     }
 

@@ -17,12 +17,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Badge
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -37,10 +40,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import com.vlt.zeroperte.ui.FoodCreateUpdate
 import com.vlt.zeroperte.ui.FoodList
 import com.vlt.zeroperte.ui.Parameters
+import com.vlt.zeroperte.ui.ViewModel.HomeViewModel
 
 enum class HomeCardColorRole {
     Primary, Secondary, Tertiary, Error
@@ -84,7 +89,8 @@ val defaultHomeMenuItems = listOf(
 fun HomeScreen(
     modifier: Modifier = Modifier,
     navController: NavHostController,
-    menuItems: List<HomeMenuItem> = defaultHomeMenuItems
+    menuItems: List<HomeMenuItem> = defaultHomeMenuItems,
+    viewModel: HomeViewModel = hiltViewModel()
 ) {
 
     RuntimePermissionsDialog(
@@ -100,6 +106,12 @@ fun HomeScreen(
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp)
         )
+
+        Button(onClick = {
+            viewModel.runOneTimeWorkRequest()
+        }) {
+            Text("One Time Work Request")
+        }
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
