@@ -17,6 +17,8 @@ interface FoodRepository {
 
     suspend fun delete(foodDto: FoodDto)
 
+    suspend fun deleteAll()
+
     suspend fun update(foodDto: FoodDto)
 
 }

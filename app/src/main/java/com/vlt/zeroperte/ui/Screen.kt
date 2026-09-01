@@ -4,6 +4,9 @@ import kotlinx.serialization.Serializable
 
 
 @Serializable
+object FakeRoute
+
+@Serializable
 object Home
 
 @Serializable

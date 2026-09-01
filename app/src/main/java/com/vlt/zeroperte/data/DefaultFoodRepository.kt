@@ -24,6 +24,7 @@ class DefaultFoodRepository @Inject constructor(
     override suspend fun create(foodDto: FoodDto) = foodDao.insert(FoodMapper.fromDto(foodDto))
 
     override suspend fun delete(foodDto: FoodDto) = foodDao.delete(FoodMapper.fromDto(foodDto))
+    override suspend fun deleteAll() = foodDao.deleteAll()
 
     override suspend fun update(foodDto: FoodDto) = foodDao.update(FoodMapper.fromDto(foodDto))
 

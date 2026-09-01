@@ -2,6 +2,7 @@ package com.vlt.zeroperte.data.model
 
 import androidx.room.Dao
 import androidx.room.Delete
+import androidx.room.DeleteTable
 import androidx.room.Insert
 import androidx.room.Query
 import androidx.room.Update
@@ -41,4 +42,7 @@ interface FoodDao {
 
     @Update
     suspend fun update(food: Food)
+
+    @Query("DELETE FROM food")
+    suspend fun deleteAll()
 }

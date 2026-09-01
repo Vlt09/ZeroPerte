@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.vlt.zeroperte.business.FoodStatusCalculator
+import com.vlt.zeroperte.data.FoodRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -15,7 +16,8 @@ import javax.inject.Inject
 
 
 @HiltViewModel
-class ParametersViewModel @Inject constructor(application: Application) : ViewModel() {
+class ParametersViewModel @Inject constructor(application: Application,
+                                            private val repository: FoodRepository) : ViewModel() {
 
     sealed interface ParametersUiState {
         data class Content(
@@ -73,5 +75,14 @@ class ParametersViewModel @Inject constructor(application: Application) : ViewMo
     private fun saveNotifActivationToPreference(notifEnabled: Boolean) {
         preferenceNotif.edit().putBoolean("notif_enabled", notifEnabled).apply()
         Log.i("ParametersVm", "notif_enabled saved: $notifEnabled")
+    }
+
+    suspend fun deleteAllData() {
+        try {
+            repository.deleteAll()
+            Log.i("ParametersVm", "Toutes les données ont été supprimées")
+        } catch (e: Exception) {
+            Log.e("ParametersVm", "Échec de la suppression des données", e)
+        }
     }
 }

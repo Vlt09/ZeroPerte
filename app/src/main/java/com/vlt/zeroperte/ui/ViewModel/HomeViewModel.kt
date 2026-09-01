@@ -26,10 +26,10 @@ class HomeViewModel @Inject constructor(@param:ApplicationContext private val ap
     fun runPeriodicWorkRequestInitialDelay() {
 
         val workRequest = PeriodicWorkRequestBuilder<ZeroPerteNotifWorker>(
-            repeatInterval = 1,
-            TimeUnit.DAYS
+            repeatInterval = 8,
+            TimeUnit.HOURS
         )
-            .setInitialDelay(5, TimeUnit.MINUTES)
+            .setInitialDelay(20, TimeUnit.MINUTES)
             .build()
 
         workManager.enqueueUniquePeriodicWork(

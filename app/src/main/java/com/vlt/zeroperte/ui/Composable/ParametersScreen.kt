@@ -8,6 +8,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -16,10 +19,12 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,6 +35,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.vlt.zeroperte.ui.Home
 import com.vlt.zeroperte.ui.ViewModel.ParametersViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun ParametersScreen(
@@ -113,7 +119,11 @@ fun ParametersScreen(
                 modifier = Modifier.fillMaxWidth()
             )
         }
+
+        DeleteDataSection(viewModel)
+
     }
+
 }
 
 @Composable
@@ -141,5 +151,62 @@ private fun ParametersHeader(modifier: Modifier = Modifier, navController: NavHo
                 tint = MaterialTheme.colorScheme.onBackground
             )
         }
+    }
+}
+
+@Composable
+private fun DeleteDataSection(
+    viewModel: ParametersViewModel,
+    modifier: Modifier = Modifier
+) {
+    var showDeleteConfirmation by remember { mutableStateOf(false) }
+    val coroutineScope = rememberCoroutineScope() // Use when User trigger Delete Data button
+
+    Column(modifier = modifier) {
+        Text(
+            text = "Zone de danger",
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.error
+        )
+        Text(
+            text = "Supprime définitivement tous les aliments enregistrés",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 4.dp, bottom = 12.dp)
+        )
+
+        Button(
+            onClick = { showDeleteConfirmation = true },
+            colors = ButtonDefaults.buttonColors(
+                containerColor = MaterialTheme.colorScheme.errorContainer,
+                contentColor = MaterialTheme.colorScheme.onErrorContainer
+            ),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Supprimer toutes les données")
+        }
+    }
+
+    if (showDeleteConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation = false },
+            title = { Text("Supprimer toutes les données ?") },
+            text = { Text("Cette action est irréversible. Tous les aliments enregistrés seront définitivement supprimés.") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        coroutineScope.launch { viewModel.deleteAllData() }
+                        showDeleteConfirmation = false
+                    }
+                ) {
+                    Text("Supprimer", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmation = false }) {
+                    Text("Annuler")
+                }
+            }
+        )
     }
 }

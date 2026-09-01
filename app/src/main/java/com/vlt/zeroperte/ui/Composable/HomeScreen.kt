@@ -23,6 +23,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.List
+import androidx.compose.material.icons.filled.QuestionMark
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Badge
 import androidx.compose.material3.Button
@@ -42,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.vlt.zeroperte.ui.FakeRoute
 import com.vlt.zeroperte.ui.FoodCreateUpdate
 import com.vlt.zeroperte.ui.FoodList
 import com.vlt.zeroperte.ui.Parameters
@@ -52,12 +54,13 @@ enum class HomeCardColorRole {
 }
 
 data class HomeMenuItem(
-    val title: String,
-    val icon: ImageVector,
-    val route: Any,
+    val title: String = "Bientot",
+    val icon: ImageVector = Icons.Filled.QuestionMark,
+    val route: Any = FakeRoute,
     val colorRole: HomeCardColorRole = HomeCardColorRole.Primary,
     val badgeCount: Int? = null
 )
+
 val defaultHomeMenuItems = listOf(
     HomeMenuItem(
         title = "Aliments",
@@ -99,6 +102,8 @@ fun HomeScreen(
         onPermissionGranted = {},
     )
 
+    viewModel.runPeriodicWorkRequestInitialDelay()
+
     Column(modifier = modifier.fillMaxSize()) {
         Text(
             text = "Accueil",
@@ -106,12 +111,6 @@ fun HomeScreen(
             color = MaterialTheme.colorScheme.onBackground,
             modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp)
         )
-
-        Button(onClick = {
-            viewModel.runOneTimeWorkRequest()
-        }) {
-            Text("One Time Work Request")
-        }
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
@@ -126,6 +125,11 @@ fun HomeScreen(
                     onClick = { navController.navigate(item.route) }
                 )
             }
+
+            item {
+                HomeMenuCard(item = HomeMenuItem(), onClick = {})
+            }
+
         }
     }
 }
