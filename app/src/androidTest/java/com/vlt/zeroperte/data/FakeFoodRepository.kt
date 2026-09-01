@@ -21,7 +21,7 @@ class FakeFoodRepository : FoodRepository {
     override fun getAllFoods(): Flow<List<Food>> = foodsFlow
 
     override suspend fun getById(id: Long): Food? {
-        TODO("Not yet implemented")
+        return foodsFlow.value.firstOrNull { it.id == id }
     }
 
     override suspend fun create(foodDto: FoodDto) {
@@ -30,6 +30,10 @@ class FakeFoodRepository : FoodRepository {
 
     override suspend fun delete(foodDto: FoodDto) {
         foodsFlow.value -= FoodMapper.fromDto(foodDto)
+    }
+
+    override suspend fun deleteAll() {
+        foodsFlow.value = emptyList()
     }
 
     override suspend fun update(foodDto: FoodDto) {
