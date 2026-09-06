@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
@@ -34,31 +33,43 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
+import androidx.compose.foundation.text.input.TextFieldState
+import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.NoFood
 import androidx.compose.material.icons.filled.Photo
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SearchBar
+import androidx.compose.material3.SearchBarDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.isTraversalGroup
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.traversalIndex
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -94,6 +105,12 @@ data class FoodCardItem(
     val dtoRef: FoodDto
 )
 
+enum class SearchCriteria(val label: String) {
+    Name("Nom"),
+    Brand("Marque"),
+    Category("Catégorie"),
+    Comment("Commentaire")
+}
 
 @Composable
 fun FoodListScreen(
@@ -155,21 +172,31 @@ private fun FoodListLazyColumn(
         }
     }
 
+    val textFieldState = rememberTextFieldState()
+    var selectedCriteria by remember { mutableStateOf(SearchCriteria.Name) }
+
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),
         contentPadding = PaddingValues(16.dp)
     ) {
 
         item {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .wrapContentHeight(),
-                horizontalArrangement = Arrangement.Start,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                FoodHeader(modifier, navController)
+            Column(modifier = Modifier.fillMaxWidth()) {
+                FoodHeader(
+                    navController = navController,
+                    modifier = Modifier.align(Alignment.End)
+                )
+
+
+                FoodSearchBar(
+                    textFieldState = textFieldState,
+                    selectedCriteria = selectedCriteria,
+                    onCriteriaSelected = { selectedCriteria = it },
+                    onSearch = { result -> viewModel.triggerSearch(result, selectedCriteria) },
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
+
             FoodStatusFilterRow(filterState = filterState,
                 onStatusClick = {foodStatus -> viewModel.toggleStatus(foodStatus)})
 
@@ -285,23 +312,9 @@ internal fun AddFoodFab(onClick: () -> Unit = {}, navController: NavHostControll
 
 @Composable
 internal fun FoodHeader(modifier: Modifier = Modifier, navController: NavHostController) {
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp)
-    ) {
-        Text(
-            text = "Aliments",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onBackground,
-            textAlign = TextAlign.Start,
-            modifier = Modifier.align(Alignment.CenterStart)
-        )
-
         IconButton(
             onClick = { navController.navigate(Home) },
-            modifier = Modifier.align(Alignment.CenterEnd)
-                                .padding(top = 7.dp)
+            modifier = modifier
         ) {
             Icon(
                 imageVector = Icons.Filled.Home,
@@ -309,8 +322,9 @@ internal fun FoodHeader(modifier: Modifier = Modifier, navController: NavHostCon
                 tint = MaterialTheme.colorScheme.onBackground
             )
         }
-    }
 }
+
+
 @Composable
 internal fun FoodCard(
     modifier: Modifier = Modifier,
@@ -481,5 +495,70 @@ private fun FilterStatusButton(
                 .padding(vertical = 10.dp)
                 .fillMaxWidth()
         )
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun FoodSearchBar(
+    textFieldState: TextFieldState,
+    selectedCriteria: SearchCriteria,
+    onCriteriaSelected: (SearchCriteria) -> Unit,
+    onSearch: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var expanded by rememberSaveable { mutableStateOf(false) }
+    var menuExpanded by remember { mutableStateOf(false) }
+
+    Box(
+        modifier
+            .fillMaxWidth()
+            .semantics { isTraversalGroup = true }
+    ) {
+        SearchBar(
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { traversalIndex = 0f },
+            inputField = {
+                SearchBarDefaults.InputField(
+                    query = textFieldState.text.toString(),
+                    onQueryChange = { textFieldState.edit { replace(0, length, it) } },
+                    onSearch = {
+                        onSearch(textFieldState.text.toString())
+                        expanded = false
+                    },
+                    expanded = false,
+                    onExpandedChange = { expanded = false },
+                    placeholder = { Text("Rechercher par ${selectedCriteria.label.lowercase()}") },
+                    trailingIcon = {
+                        Box {
+                            IconButton(onClick = { menuExpanded = true }) {
+                                Icon(
+                                    imageVector = Icons.Filled.FilterList,
+                                    contentDescription = "Choisir le critère de recherche"
+                                )
+                            }
+
+                            DropdownMenu(
+                                expanded = menuExpanded,
+                                onDismissRequest = { menuExpanded = false }
+                            ) {
+                                SearchCriteria.entries.forEach { criteria ->
+                                    DropdownMenuItem(
+                                        text = { Text(criteria.label) },
+                                        onClick = {
+                                            onCriteriaSelected(criteria)
+                                            menuExpanded = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                )
+            },
+            expanded = false,
+            onExpandedChange = { expanded = false },
+        ) {}
     }
 }

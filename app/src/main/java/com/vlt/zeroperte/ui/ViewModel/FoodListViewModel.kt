@@ -8,6 +8,7 @@ import com.vlt.zeroperte.data.FoodRepository
 import com.vlt.zeroperte.data.model.FoodDto
 import com.vlt.zeroperte.data.model.FoodListViewModelDto
 import com.vlt.zeroperte.data.model.domain.FoodStatus
+import com.vlt.zeroperte.ui.Composable.SearchCriteria
 import com.vlt.zeroperte.utils.FoodMapper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
@@ -39,6 +40,9 @@ class FoodListViewModel @Inject constructor(private val repository: FoodReposito
 
     data class FilterState(val statuses : List<FoodStatus>,
                            val selectedStatus: FoodStatus?)
+
+    data class SearchCriteriaState(val criteriaList: List<SearchCriteria>,
+                                    val selectedCriteria: SearchCriteria)
 
 
     private val _foodListFlow: Flow<List<FoodListViewModelDto>> =
@@ -99,6 +103,10 @@ class FoodListViewModel @Inject constructor(private val repository: FoodReposito
                     selectedStatus = newStatus
                 )
         }
+    }
+
+    fun triggerSearch(result: String, selectedCriteria: SearchCriteria){
+
     }
 
     suspend fun delete(foodDto: FoodDto) {

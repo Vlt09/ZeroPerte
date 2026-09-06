@@ -67,6 +67,7 @@ dependencies {
     implementation(libs.androidx.work.testing)
     implementation(libs.androidx.hilt.common)
     implementation(libs.androidx.hilt.work)
+    implementation(libs.androidx.material3)
     testImplementation(libs.junit)
     testImplementation(libs.androidx.junit.ktx)
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.11.0")
