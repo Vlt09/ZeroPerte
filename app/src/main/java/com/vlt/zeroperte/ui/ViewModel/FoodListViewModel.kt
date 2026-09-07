@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import java.util.function.Predicate
 import javax.inject.Inject
 
 
@@ -34,15 +35,18 @@ class FoodListViewModel @Inject constructor(private val repository: FoodReposito
                            val filter: FilterState)
             : FoodListUiState
 
-        data object Delete : FoodListUiState
         data object Loading : FoodListUiState
     }
 
     data class FilterState(val statuses : List<FoodStatus>,
-                           val selectedStatus: FoodStatus?)
+                           val selectedStatus: FoodStatus?,
+                           val applyFilter: Predicate<FoodListViewModelDto>)
 
-    data class SearchCriteriaState(val criteriaList: List<SearchCriteria>,
-                                    val selectedCriteria: SearchCriteria)
+    data class SearchCriteriaState(
+        val criteriaList: List<SearchCriteria>,
+        val applyCriteria: Predicate<FoodListViewModelDto>,
+        val searchInput: String?
+    )
 
 
     private val _foodListFlow: Flow<List<FoodListViewModelDto>> =
@@ -54,30 +58,41 @@ class FoodListViewModel @Inject constructor(private val repository: FoodReposito
     private val _filterUiState = MutableStateFlow(
         FilterState(
                     statuses = FoodStatus.allStatuses,
-                    selectedStatus = null
+                    selectedStatus = null,
+                    applyFilter = {f -> true}
                     )
                 )
+
     val filterUiState =  _filterUiState.asStateFlow()
+
+    private val _searchBarUiState = MutableStateFlow(
+        SearchCriteriaState(
+            criteriaList = SearchCriteria.allCriteria,
+            applyCriteria = {f -> true},
+            searchInput = null
+        )
+    )
+
+    private val searchBarUiState = _searchBarUiState.asStateFlow()
 
     val uiState : StateFlow<FoodListUiState> =
         combine(
             _foodListFlow,
-            _filterUiState
+            _filterUiState,
+            _searchBarUiState
         ){
-            foods, filter ->
+            foods, filter, searchBar ->
             Log.d(TAG, "combine triggered, foods.size=${foods.size}")
             if (foods.isEmpty()){
                 FoodListUiState.Empty(filter)
             }
             else{
-                if (filter.selectedStatus != null){
-                    val filteringFoods = foods.filter { f -> f.status == filter.selectedStatus }.toList()
-                    FoodListUiState.Content(filteringFoods, filter)
+                    val filteringFoods = foods.filter { f -> filter.applyFilter.test(f) &&
+                                                         searchBar.applyCriteria.test(f) }
+                        .toList()
 
-                }
-                else{
-                    FoodListUiState.Content(foods, filter)
-                }
+                FoodListUiState.Content(filteringFoods, filter)
+
             }
 
         }.stateIn(
@@ -90,23 +105,55 @@ class FoodListViewModel @Inject constructor(private val repository: FoodReposito
 
     fun toggleStatus(status: FoodStatus){
         _filterUiState.update {
-                val currentSelectedStatus = it.selectedStatus
-                val newStatus =
-                    // Filter selected twice is cancelled
-                    if (currentSelectedStatus == status){
-                    null
+                var newStatus = it.selectedStatus
+                var newFilter = it.applyFilter
+
+                // Filter selected twice is cancelled
+                if (newStatus == status){
+                    newStatus = null
+                    newFilter = Predicate<FoodListViewModelDto>{ f -> true}
                 }
                 else {
-                    status
+                    newStatus = status
+                    newFilter = Predicate<FoodListViewModelDto>{ f -> f.status == newStatus}
                 }
+
                 return@update it.copy(
-                    selectedStatus = newStatus
+                    selectedStatus = newStatus,
+                    applyFilter = newFilter
                 )
         }
     }
 
-    fun triggerSearch(result: String, selectedCriteria: SearchCriteria){
+    fun toggleCriteria(searchCriteria: SearchCriteria){
+        _searchBarUiState.update {
+            val newCriteria =
+                if(it.searchInput == null){
+                    Predicate<FoodListViewModelDto>{f -> true} // can't filter if the input is null
+                }
+                else {
+                    Predicate<FoodListViewModelDto>{f ->
+                        when(searchCriteria){
+                            SearchCriteria.Name -> f.name == it.searchInput
+                            SearchCriteria.Brand -> f.brand == it.searchInput
+                            SearchCriteria.Category -> f.category == it.searchInput
+                        }
+                    }
+                }
 
+            return@update it.copy(
+                applyCriteria = newCriteria
+            )
+        }
+    }
+
+    fun triggerSearch(result: String){
+        Log.i("FoodLisViewModel", "inputSearch = $result")
+        _searchBarUiState.update {
+            return@update it.copy(
+                searchInput = result
+            )
+        }
     }
 
     suspend fun delete(foodDto: FoodDto) {

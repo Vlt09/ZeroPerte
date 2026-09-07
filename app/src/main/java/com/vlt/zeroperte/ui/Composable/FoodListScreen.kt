@@ -80,6 +80,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.vlt.zeroperte.business.FoodStatusCalculator
+import com.vlt.zeroperte.data.model.Food
 import com.vlt.zeroperte.data.model.FoodDto
 import com.vlt.zeroperte.data.model.domain.FoodStatus
 import com.vlt.zeroperte.ui.FoodCreateUpdate
@@ -93,6 +94,7 @@ import com.vlt.zeroperte.utils.FoodMapper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import java.lang.reflect.Field
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
@@ -106,10 +108,15 @@ data class FoodCardItem(
 )
 
 enum class SearchCriteria(val label: String) {
+
     Name("Nom"),
     Brand("Marque"),
-    Category("Catégorie"),
-    Comment("Commentaire")
+    Category("Catégorie");
+
+    companion object {
+        val allCriteria = listOf<SearchCriteria>(Name, Brand, Category)
+    }
+
 }
 
 @Composable
@@ -191,8 +198,11 @@ private fun FoodListLazyColumn(
                 FoodSearchBar(
                     textFieldState = textFieldState,
                     selectedCriteria = selectedCriteria,
-                    onCriteriaSelected = { selectedCriteria = it },
-                    onSearch = { result -> viewModel.triggerSearch(result, selectedCriteria) },
+                    onCriteriaSelected = {
+                        selectedCriteria = it
+                        viewModel.toggleCriteria(selectedCriteria)
+                                         },
+                    onSearch = { result -> viewModel.triggerSearch(result) },
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -522,9 +532,11 @@ fun FoodSearchBar(
             inputField = {
                 SearchBarDefaults.InputField(
                     query = textFieldState.text.toString(),
-                    onQueryChange = { textFieldState.edit { replace(0, length, it) } },
-                    onSearch = {
+                    onQueryChange = {
+                        textFieldState.edit { replace(0, length, it) }
                         onSearch(textFieldState.text.toString())
+                                    },
+                    onSearch = {
                         expanded = false
                     },
                     expanded = false,
