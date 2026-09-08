@@ -9,6 +9,7 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -67,6 +68,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
@@ -111,6 +114,7 @@ enum class SearchCriteria(val label: String) {
 
     Name("Nom"),
     Brand("Marque"),
+    Default("Selectionner le critère de recherche à droite"),
     Category("Catégorie");
 
     companion object {
@@ -128,9 +132,25 @@ fun FoodListScreen(
     val foodListUiState by viewModel.uiState.collectAsStateWithLifecycle()
     val filterState by viewModel.filterUiState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope() // Use when User trigger Delete button
+    // Source - https://stackoverflow.com/a/70419966
+    // Posted by Decline
+    // Retrieved 2026-09-08, License - CC BY-SA 4.0
 
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+    val interactionSource = remember { MutableInteractionSource() }
+
+    //viewModel.toggleCriteria(SearchCriteria.Default) // Init search bar criteria
+    
     Scaffold(
-        modifier = modifier,
+        modifier = modifier
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null // This gets rid of the ripple effect
+            ){
+                keyboardController?.hide()
+                focusManager.clearFocus(true)
+            },
         floatingActionButton = {
             AddFoodFab(navController = navController)
         }
@@ -147,7 +167,7 @@ fun FoodListScreen(
         )
         is FoodListViewModel.FoodListUiState.Empty -> EmptyFoodItem(modifier)
         FoodListViewModel.FoodListUiState.Loading -> Text("Loading foods")
-            else -> {
+        else -> {
                 Log.i(TAG, "else statement foodListUiState : $foodListUiState")
             }
         }
@@ -541,7 +561,14 @@ fun FoodSearchBar(
                     },
                     expanded = false,
                     onExpandedChange = { expanded = false },
-                    placeholder = { Text("Rechercher par ${selectedCriteria.label.lowercase()}") },
+                    placeholder = {
+                        if (selectedCriteria == SearchCriteria.Default){
+                            Text(selectedCriteria.label.lowercase())
+                        }
+                        else{
+                            Text("Rechercher par ${selectedCriteria.label.lowercase()}")
+                        }
+                      },
                     trailingIcon = {
                         Box {
                             IconButton(onClick = { menuExpanded = true }) {
