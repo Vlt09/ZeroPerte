@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.Button
@@ -227,52 +228,67 @@ private fun FormFieldsUi(
 ) {
 
     var recognizedDate by remember { mutableStateOf("") }
+    var showCameraDialog by remember { mutableStateOf(false) }
 
-    // Entry name
-    TextField(
-        label = "Nom de l'aliment",
-        form = viewModel.form,
-        fieldState = viewModel.form.name
-    ).Field()
 
-    // --- Date de péremption (obligatoire) ---
-    Box() {
-        DateField(
-            label = "Date de péremption",
-            form = viewModel.form,
-            fieldState = viewModel.form.expiryDate,
-            formatter = ::dateLong,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 16.dp)
-        ).Field()
-
-        var showCameraDialog by remember { mutableStateOf(false) }
-
+    Row(horizontalArrangement = Arrangement.Center) {
         IconButton(
-            onClick = { showCameraDialog = true },
-            modifier = Modifier
-                .align(Alignment.CenterEnd)
-                .padding(bottom = 8.dp)
-        ) {
+            modifier = Modifier.size(150.dp)
+                .padding(top = 5.dp),
+            onClick = {showCameraDialog = true}) {
             Icon(
                 imageVector = Icons.Filled.PhotoCamera,
-                contentDescription = "Prendre une photo de la date de péremption"
+                contentDescription = "Choisir le critère de recherche"
             )
         }
 
-        if (showCameraDialog) {
-            CameraBox {
-                if (it != null){
-                    recognizedDate = it
-                    viewModel.form.expiryDate.state.value = Converters.fromStringDateToDate(it)
-                    Log.i(TAG, "recognizedDate $recognizedDate")
+        Column {
+            // Entry name
+            TextField(
+                label = "Nom de l'aliment",
+                form = viewModel.form,
+                fieldState = viewModel.form.name
+            ).Field()
+
+            // --- Date de péremption (obligatoire) ---
+            Box() {
+                DateField(
+                    label = "Date de péremption",
+                    form = viewModel.form,
+                    fieldState = viewModel.form.expiryDate,
+                    formatter = ::dateLong,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 16.dp)
+                ).Field()
+
+                IconButton(
+                    onClick = { showCameraDialog = true },
+                    modifier = Modifier
+                        .align(Alignment.CenterEnd)
+                        .padding(bottom = 8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Filled.PhotoCamera,
+                        contentDescription = "Prendre une photo de la date de péremption"
+                    )
                 }
-                showCameraDialog = false
+
+                if (showCameraDialog) {
+                    CameraBox {
+                        if (it != null){
+                            recognizedDate = it
+                            viewModel.form.expiryDate.state.value = Converters.fromStringDateToDate(it)
+                            Log.i(TAG, "recognizedDate $recognizedDate")
+                        }
+                        showCameraDialog = false
+                    }
+                }
             }
         }
-    }
 
+
+    }
 
     // --- Date d'achat (optionnelle) ---
     DateField(
@@ -377,10 +393,11 @@ fun CameraBox(onTextRecognized: (String?) -> Unit) {
     val lifecycleOwner = LocalLifecycleOwner.current
     val previewView = remember {
         PreviewView(context).apply {
-            layoutParams = ViewGroup.LayoutParams(
+            /*layoutParams = ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT
-            )
+            )*/
+            scaleType = PreviewView.ScaleType.FILL_CENTER
         }
     }
     val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }

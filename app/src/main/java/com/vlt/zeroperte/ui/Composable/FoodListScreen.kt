@@ -114,7 +114,7 @@ enum class SearchCriteria(val label: String) {
     Name("Nom"),
     Brand("Marque"),
     Category("Catégorie"),
-    NoSelected("Aucun critère de recherche");
+    NoSelected("Recherche");
 
     companion object {
         val allCriteria = listOf<SearchCriteria>(Name, Brand, Category)
@@ -557,10 +557,10 @@ fun FoodSearchBar(
                     onExpandedChange = { expanded = false },
                     placeholder = {
                         if (selectedCriteria == SearchCriteria.NoSelected){
-                            Text(selectedCriteria.label.lowercase())
+                            Text(selectedCriteria.label)
                         }
                         else{
-                            Text("Rechercher par ${selectedCriteria.label.lowercase()}")
+                            Text("Rechercher par ${selectedCriteria.label}")
                         }
                       },
                     trailingIcon = {
