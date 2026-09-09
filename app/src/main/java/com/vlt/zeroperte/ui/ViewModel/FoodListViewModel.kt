@@ -126,10 +126,11 @@ class FoodListViewModel @Inject constructor(private val repository: FoodReposito
         }
     }
 
+
     fun toggleCriteria(searchCriteria: SearchCriteria){
         _searchBarUiState.update {
             val newCriteria =
-                if(it.searchInput == null && searchCriteria != SearchCriteria.Default){
+                if(it.searchInput == null){
                     Predicate<FoodListViewModelDto>{f -> true} // can't filter if the input is null
                 }
                 else {
@@ -138,7 +139,7 @@ class FoodListViewModel @Inject constructor(private val repository: FoodReposito
                             SearchCriteria.Name -> f.name == it.searchInput
                             SearchCriteria.Brand -> f.brand == it.searchInput
                             SearchCriteria.Category -> f.category == it.searchInput
-                            SearchCriteria.Default -> f.name == it.searchInput
+                            SearchCriteria.NoSelected -> true
                         }
                     }
                 }
@@ -152,14 +153,8 @@ class FoodListViewModel @Inject constructor(private val repository: FoodReposito
     fun triggerSearch(result: String){
         Log.i("FoodLisViewModel", "inputSearch = $result")
         _searchBarUiState.update {
-            var criteria = it.applyCriteria
-            if (result == ""){
-                criteria = Predicate<FoodListViewModelDto>{f -> true}
-            }
-
             return@update it.copy(
                 searchInput = result,
-                applyCriteria = criteria
             )
         }
     }

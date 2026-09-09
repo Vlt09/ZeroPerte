@@ -38,6 +38,7 @@ import androidx.compose.foundation.text.input.TextFieldState
 import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.Home
@@ -83,7 +84,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.vlt.zeroperte.business.FoodStatusCalculator
-import com.vlt.zeroperte.data.model.Food
 import com.vlt.zeroperte.data.model.FoodDto
 import com.vlt.zeroperte.data.model.domain.FoodStatus
 import com.vlt.zeroperte.ui.FoodCreateUpdate
@@ -97,7 +97,6 @@ import com.vlt.zeroperte.utils.FoodMapper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.lang.reflect.Field
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 
@@ -114,8 +113,8 @@ enum class SearchCriteria(val label: String) {
 
     Name("Nom"),
     Brand("Marque"),
-    Default("Selectionner le critère de recherche à droite"),
-    Category("Catégorie");
+    Category("Catégorie"),
+    NoSelected("Aucun critère de recherche");
 
     companion object {
         val allCriteria = listOf<SearchCriteria>(Name, Brand, Category)
@@ -132,16 +131,11 @@ fun FoodListScreen(
     val foodListUiState by viewModel.uiState.collectAsStateWithLifecycle()
     val filterState by viewModel.filterUiState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope() // Use when User trigger Delete button
-    // Source - https://stackoverflow.com/a/70419966
-    // Posted by Decline
-    // Retrieved 2026-09-08, License - CC BY-SA 4.0
 
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
     val interactionSource = remember { MutableInteractionSource() }
 
-    //viewModel.toggleCriteria(SearchCriteria.Default) // Init search bar criteria
-    
     Scaffold(
         modifier = modifier
             .clickable(
@@ -200,7 +194,7 @@ private fun FoodListLazyColumn(
     }
 
     val textFieldState = rememberTextFieldState()
-    var selectedCriteria by remember { mutableStateOf(SearchCriteria.Name) }
+    var selectedCriteria by remember { mutableStateOf(SearchCriteria.NoSelected) }
 
     LazyColumn(
         modifier = Modifier.fillMaxWidth(),
@@ -562,7 +556,7 @@ fun FoodSearchBar(
                     expanded = false,
                     onExpandedChange = { expanded = false },
                     placeholder = {
-                        if (selectedCriteria == SearchCriteria.Default){
+                        if (selectedCriteria == SearchCriteria.NoSelected){
                             Text(selectedCriteria.label.lowercase())
                         }
                         else{
@@ -570,8 +564,23 @@ fun FoodSearchBar(
                         }
                       },
                     trailingIcon = {
-                        Box {
-                            IconButton(onClick = { menuExpanded = true }) {
+                        Box() {
+                            IconButton(
+                                modifier = Modifier.padding(end = 30.dp),
+                                onClick = {
+                                    textFieldState.edit { replace(0, length, "")}
+                                    onCriteriaSelected(SearchCriteria.NoSelected)
+                                }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Close,
+                                    contentDescription = "Choisir le critère de recherche"
+                                )
+                            }
+
+                            IconButton(
+                                modifier = Modifier.padding(start = 30.dp),
+                                onClick = { menuExpanded = true }
+                            ) {
                                 Icon(
                                     imageVector = Icons.Filled.FilterList,
                                     contentDescription = "Choisir le critère de recherche"
@@ -582,14 +591,15 @@ fun FoodSearchBar(
                                 expanded = menuExpanded,
                                 onDismissRequest = { menuExpanded = false }
                             ) {
-                                SearchCriteria.entries.forEach { criteria ->
-                                    DropdownMenuItem(
-                                        text = { Text(criteria.label) },
-                                        onClick = {
-                                            onCriteriaSelected(criteria)
-                                            menuExpanded = false
-                                        }
-                                    )
+                                SearchCriteria.entries.filter { c -> c != SearchCriteria.NoSelected }
+                                    .forEach { criteria ->
+                                        DropdownMenuItem(
+                                            text = { Text(criteria.label) },
+                                            onClick = {
+                                                onCriteriaSelected(criteria)
+                                                menuExpanded = false
+                                            }
+                                        )
                                 }
                             }
                         }
