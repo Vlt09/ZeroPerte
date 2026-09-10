@@ -1,7 +1,6 @@
 package com.vlt.zeroperte.ui.Composable
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,11 +25,13 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -40,9 +41,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import com.vlt.zeroperte.R
 import com.vlt.zeroperte.business.FoodStatusCalculator
 import com.vlt.zeroperte.ui.FoodCreateUpdate
 import com.vlt.zeroperte.ui.FoodList
+import com.vlt.zeroperte.ui.ViewModel.AppSettingsViewModel
 import com.vlt.zeroperte.ui.ViewModel.FoodDetailViewModel
 import com.vlt.zeroperte.ui.theme.ColorFamily
 import com.vlt.zeroperte.ui.theme.extendedDark
@@ -71,12 +74,14 @@ fun FoodDetailScreen(
     viewModel: FoodDetailViewModel = hiltViewModel(),
     onBackClick: () -> Unit = {},
     onDeleteClick: () -> Unit = {},
-    navController: NavHostController
+    navController: NavHostController,
+    appSettingsViewModel: AppSettingsViewModel
 ) {
     val coroutineScope = rememberCoroutineScope()
     val detailState = viewModel.viewState.collectAsStateWithLifecycle()
+    val appSettingsUiState by appSettingsViewModel.uiState.collectAsStateWithLifecycle()
 
-    val extendedColors = if (isSystemInDarkTheme()) extendedDark else extendedLight
+    val extendedColors = if (appSettingsUiState.darkModeEnabled) extendedDark else extendedLight
 
     LaunchedEffect(Unit) {
         if (foodId != null){
@@ -112,7 +117,8 @@ fun FoodDetailScreen(
                     photo = null
                 ),
                 statusColor = statusColor,
-                navController
+                navController = navController,
+                appSettingsViewModel = appSettingsViewModel
             )
         }
         is FoodDetailViewModel.ViewState.Failure ->
@@ -122,7 +128,8 @@ fun FoodDetailScreen(
                 onDeleteClick = {},
                 foodDetail = null,
                 statusColor = null,
-                navController
+                navController = navController,
+                appSettingsViewModel = appSettingsViewModel
             )
         else -> {}
     }
@@ -136,7 +143,8 @@ private fun FoodDetailUI(
     onDeleteClick: () -> Unit,
     foodDetail: FoodDetailItem?,
     statusColor: ColorFamily?,
-    navController: NavController
+    navController: NavController,
+    appSettingsViewModel: AppSettingsViewModel
 ) {
     Column(
         modifier = modifier
@@ -153,19 +161,21 @@ private fun FoodDetailUI(
             IconButton(onClick = onBackClick) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Retour",
+                    contentDescription = stringResource(R.string.food_detail_content_desc_back),
                     tint = MaterialTheme.colorScheme.onBackground
                 )
             }
 
             Text(
-                text = "Détails aliment",
+                text = stringResource(R.string.food_detail_title),
                 style = MaterialTheme.typography.headlineMedium,
                 color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier
                     .weight(1f)
                     .padding(start = 8.dp)
             )
+
+            AppSettingsActions(appSettingsViewModel = appSettingsViewModel)
 
             Surface(
                 shape = RoundedCornerShape(12.dp),
@@ -174,7 +184,7 @@ private fun FoodDetailUI(
                 IconButton(onClick = onDeleteClick) {
                     Icon(
                         imageVector = Icons.Filled.Delete,
-                        contentDescription = "Supprimer l'aliment",
+                        contentDescription = stringResource(R.string.food_detail_content_desc_delete),
                         tint = MaterialTheme.colorScheme.background
                     )
                 }
@@ -199,7 +209,7 @@ private fun FoodDetailUI(
                 ) {
                     Icon(
                         imageVector = foodDetail.photo ?: Icons.Filled.Photo,
-                        contentDescription = "Photo de l'aliment",
+                        contentDescription = stringResource(R.string.food_detail_content_desc_photo),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(32.dp)
                     )
@@ -215,9 +225,9 @@ private fun FoodDetailUI(
                 ) {
                     Text(
                         text = if (foodDetail.remainingDays <= 0) {
-                            "Expiré"
+                            stringResource(R.string.common_expired)
                         } else {
-                            "Expire dans ${foodDetail.remainingDays} jours"
+                            stringResource(R.string.common_expires_in_days, foodDetail.remainingDays)
                         },
                         style = MaterialTheme.typography.titleMedium,
                         color = statusColor.onColor,
@@ -229,23 +239,23 @@ private fun FoodDetailUI(
 
             // --- Champs en lecture seule ---
             ReadOnlyDetailField(
-                label = "Nom de l'aliment",
+                label = stringResource(R.string.common_food_name_label),
                 value = foodDetail.name
             )
 
             ReadOnlyDetailField(
-                label = "Date d'achat",
-                value = foodDetail.purchaseDate?.format(dateFormatter) ?: "mm/dd/yyyy"
+                label = stringResource(R.string.food_detail_label_purchase_date),
+                value = foodDetail.purchaseDate?.format(dateFormatter) ?: stringResource(R.string.food_detail_placeholder_date)
             )
 
             ReadOnlyDetailField(
-                label = "Marque",
-                value = foodDetail.brand?.takeIf { it.isNotBlank() } ?: "N/A"
+                label = stringResource(R.string.food_detail_label_brand),
+                value = foodDetail.brand?.takeIf { it.isNotBlank() } ?: stringResource(R.string.food_detail_na)
             )
 
             ReadOnlyDetailField(
-                label = "Commentaire",
-                value = foodDetail.comment?.takeIf { it.isNotBlank() } ?: "Saisir"
+                label = stringResource(R.string.food_detail_label_comment),
+                value = foodDetail.comment?.takeIf { it.isNotBlank() } ?: stringResource(R.string.food_detail_placeholder_comment)
             )
 
             Surface(
@@ -259,7 +269,7 @@ private fun FoodDetailUI(
                 modifier = modifier
             ) {
                 Text(
-                    text = "Modifier information(s)",
+                    text = stringResource(R.string.food_detail_edit_button),
                     style = MaterialTheme.typography.labelLarge.copy(
                     ),
                     color = statusColor.onColorContainer,
@@ -284,13 +294,13 @@ private fun FoodDetailUI(
 
                 Icon(
                     imageVector = Icons.Filled.NoFood,
-                    contentDescription = "Aucun aliment",
+                    contentDescription = stringResource(R.string.common_content_desc_no_food),
                     tint = onError,
                     modifier = Modifier.size(64.dp)
                 )
 
                 BasicText(
-                    text = "Problème pendant la récupération des données",
+                    text = stringResource(R.string.food_detail_error_title),
                     autoSize = TextAutoSize.StepBased(maxFontSize = 24.sp),
                     style = TextStyle(fontWeight = FontWeight.Bold, textAlign = TextAlign.Center),
                     color = { onBackground },

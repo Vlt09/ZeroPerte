@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -38,15 +39,18 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
+import com.vlt.zeroperte.R
 import com.vlt.zeroperte.ui.FakeRoute
 import com.vlt.zeroperte.ui.FoodCreateUpdate
 import com.vlt.zeroperte.ui.FoodList
 import com.vlt.zeroperte.ui.Parameters
+import com.vlt.zeroperte.ui.ViewModel.AppSettingsViewModel
 import com.vlt.zeroperte.ui.ViewModel.HomeViewModel
 
 enum class HomeCardColorRole {
@@ -61,15 +65,16 @@ data class HomeMenuItem(
     val badgeCount: Int? = null
 )
 
-val defaultHomeMenuItems = listOf(
+@Composable
+fun defaultHomeMenuItems(): List<HomeMenuItem> = listOf(
     HomeMenuItem(
-        title = "Aliments",
+        title = stringResource(R.string.home_menu_foods),
         icon = Icons.Filled.List,
         route = FoodList,
         colorRole = HomeCardColorRole.Primary
     ),
     HomeMenuItem(
-        title = "Ajouter",
+        title = stringResource(R.string.home_menu_add),
         icon = Icons.Filled.Add,
         route = FoodCreateUpdate(foodId = null),
         colorRole = HomeCardColorRole.Secondary
@@ -81,7 +86,7 @@ val defaultHomeMenuItems = listOf(
             colorRole = HomeCardColorRole.Tertiary
         ),*/
     HomeMenuItem(
-        title = "Paramètres",
+        title = stringResource(R.string.home_menu_parameters),
         icon = Icons.Filled.Settings,
         route = Parameters,
         colorRole = HomeCardColorRole.Error
@@ -92,8 +97,9 @@ val defaultHomeMenuItems = listOf(
 fun HomeScreen(
     modifier: Modifier = Modifier,
     navController: NavHostController,
-    menuItems: List<HomeMenuItem> = defaultHomeMenuItems,
-    viewModel: HomeViewModel = hiltViewModel()
+    menuItems: List<HomeMenuItem> = defaultHomeMenuItems(),
+    viewModel: HomeViewModel = hiltViewModel(),
+    appSettingsViewModel: AppSettingsViewModel
 ) {
 
     RuntimePermissionsDialog(
@@ -105,12 +111,23 @@ fun HomeScreen(
     viewModel.runPeriodicWorkRequestInitialDelay()
 
     Column(modifier = modifier.fillMaxSize()) {
-        Text(
-            text = "Accueil",
-            style = MaterialTheme.typography.headlineMedium,
-            color = MaterialTheme.colorScheme.onBackground,
-            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp)
-        )
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp)
+        ) {
+            Text(
+                text = stringResource(R.string.home_title),
+                style = MaterialTheme.typography.headlineMedium,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.align(Alignment.CenterStart)
+            )
+
+            AppSettingsActions(
+                appSettingsViewModel = appSettingsViewModel,
+                modifier = Modifier.align(Alignment.CenterEnd)
+            )
+        }
 
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
@@ -127,7 +144,10 @@ fun HomeScreen(
             }
 
             item {
-                HomeMenuCard(item = HomeMenuItem(), onClick = {})
+                HomeMenuCard(
+                    item = HomeMenuItem(title = stringResource(R.string.home_menu_coming_soon)),
+                    onClick = {}
+                )
             }
 
         }

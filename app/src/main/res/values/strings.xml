@@ -1,3 +1,86 @@
 <resources>
     <string name="app_name">zeroPerte</string>
+
+    <!-- Common / shared -->
+    <string name="common_cancel">Annuler</string>
+    <string name="common_delete">Supprimer</string>
+    <string name="common_content_desc_back_to_home">Retour à l\'accueil</string>
+    <string name="common_content_desc_no_food">Aucun aliment</string>
+    <string name="common_expired">Expiré</string>
+    <string name="common_expires_in_days">Expire dans %1$d jours</string>
+    <string name="common_food_name_label">Nom de l\'aliment</string>
+    <string name="common_save_error">Problème pendant l\'enregistrement de l\'aliment</string>
+
+    <!-- Dark mode / language actions -->
+    <string name="action_switch_to_dark_mode">Activer le mode sombre</string>
+    <string name="action_switch_to_light_mode">Activer le mode clair</string>
+    <string name="action_choose_language">Choisir la langue</string>
+
+    <!-- Home screen -->
+    <string name="home_title">Accueil</string>
+    <string name="home_menu_foods">Aliments</string>
+    <string name="home_menu_add">Ajouter</string>
+    <string name="home_menu_parameters">Paramètres</string>
+    <string name="home_menu_coming_soon">Bientôt</string>
+
+    <!-- Parameters screen -->
+    <string name="parameters_title">Paramètres</string>
+    <string name="parameters_notifications_title">Notifications</string>
+    <string name="parameters_notifications_subtitle">Recevoir une alerte avant la péremption d\'un aliment</string>
+    <string name="parameters_delay_title">Délai avant péremption</string>
+    <string name="parameters_delay_subtitle">Être alerté %1$d jour(s) avant la date de péremption</string>
+    <string name="parameters_danger_zone_title">Zone de danger</string>
+    <string name="parameters_danger_zone_subtitle">Supprime définitivement tous les aliments enregistrés</string>
+    <string name="parameters_delete_all_button">Supprimer toutes les données</string>
+    <string name="parameters_delete_confirm_title">Supprimer toutes les données ?</string>
+    <string name="parameters_delete_confirm_text">Cette action est irréversible. Tous les aliments enregistrés seront définitivement supprimés.</string>
+
+    <!-- Food list screen -->
+    <string name="food_list_search_criteria_name">Nom</string>
+    <string name="food_list_search_criteria_brand">Marque</string>
+    <string name="food_list_search_criteria_category">Catégorie</string>
+    <string name="food_list_search_criteria_none">Recherche</string>
+    <string name="food_list_search_by">Rechercher par %1$s</string>
+    <string name="food_list_content_desc_choose_criteria">Choisir le critère de recherche</string>
+    <string name="food_list_empty_title">Aucun aliment enregistré</string>
+    <string name="food_list_empty_subtitle">Ajoutez votre premier aliment pour ne plus jamais rater une date de péremption</string>
+    <string name="food_list_add_content_desc">Ajouter un aliment</string>
+    <string name="food_list_photo_content_desc">Photo Aliment</string>
+    <string name="food_list_delete_content_desc">Bouton supprimer</string>
+    <string name="food_list_status_valid">Valide</string>
+    <string name="food_list_status_expiring_soon">Expire bientôt</string>
+    <string name="food_list_date_expiry">Date de péremption : %1$s</string>
+    <string name="food_list_loading">Chargement des aliments</string>
+
+    <!-- Food detail screen -->
+    <string name="food_detail_content_desc_back">Retour</string>
+    <string name="food_detail_title">Détails aliment</string>
+    <string name="food_detail_content_desc_delete">Supprimer l\'aliment</string>
+    <string name="food_detail_content_desc_photo">Photo de l\'aliment</string>
+    <string name="food_detail_label_purchase_date">Date d\'achat</string>
+    <string name="food_detail_placeholder_date">mm/dd/yyyy</string>
+    <string name="food_detail_label_brand">Marque</string>
+    <string name="food_detail_na">N/A</string>
+    <string name="food_detail_label_comment">Commentaire</string>
+    <string name="food_detail_placeholder_comment">Saisir</string>
+    <string name="food_detail_edit_button">Modifier information(s)</string>
+    <string name="food_detail_error_title">Problème pendant la récupération des données</string>
+
+    <!-- Food create/update screen -->
+    <string name="food_create_update_saved_snackbar">Aliment enregistré</string>
+    <string name="food_create_update_updated_snackbar">Aliment mis à jour</string>
+    <string name="food_create_update_title">Nouvel aliment</string>
+    <string name="food_create_update_content_desc_save">Enregistrer</string>
+    <string name="food_create_update_content_desc_take_photo">Prendre une photo</string>
+    <string name="food_create_update_label_expiry_date">Date de péremption</string>
+    <string name="food_create_update_content_desc_take_expiry_photo">Prendre une photo de la date de péremption</string>
+    <string name="food_create_update_label_purchase_date">Date d\'achat (optionnelle)</string>
+    <string name="food_create_update_label_amount">Quantité (optionnelle)</string>
+    <string name="food_create_update_label_brand">Marque (optionnelle)</string>
+    <string name="food_create_update_label_category">Catégorie (optionnelle)</string>
+    <string name="food_create_update_label_comment">Commentaire (optionnelle)</string>
+    <string name="food_create_update_camera_permission_message">L\'accès à la caméra est nécessaire pour prendre une photo</string>
+    <string name="food_create_update_allow_camera_button">Autoriser la caméra</string>
+    <string name="food_create_update_fab_take_photo">Prendre en photo la date de péremption</string>
+    <string name="food_create_update_camera_capture_content_desc">Icône de capture caméra</string>
 </resources>

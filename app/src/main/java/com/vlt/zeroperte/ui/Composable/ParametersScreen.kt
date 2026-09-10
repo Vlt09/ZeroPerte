@@ -28,12 +28,15 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.vlt.zeroperte.R
 import com.vlt.zeroperte.ui.Home
+import com.vlt.zeroperte.ui.ViewModel.AppSettingsViewModel
 import com.vlt.zeroperte.ui.ViewModel.ParametersViewModel
 import kotlinx.coroutines.launch
 
@@ -41,7 +44,8 @@ import kotlinx.coroutines.launch
 fun ParametersScreen(
     modifier: Modifier = Modifier,
     navController: NavHostController,
-    viewModel: ParametersViewModel = hiltViewModel()
+    viewModel: ParametersViewModel = hiltViewModel(),
+    appSettingsViewModel: AppSettingsViewModel
     ) {
 
     val parameterUiState = viewModel.uiState.collectAsStateWithLifecycle()
@@ -49,7 +53,7 @@ fun ParametersScreen(
     val notifDelay = (parameterUiState.value as ParametersViewModel.ParametersUiState.Content).notifDelay
 
     Column(modifier = modifier.fillMaxWidth()) {
-        ParametersHeader(navController = navController)
+        ParametersHeader(navController = navController, appSettingsViewModel = appSettingsViewModel)
 
         Column(
             modifier = Modifier
@@ -64,12 +68,12 @@ fun ParametersScreen(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
-                        text = "Notifications",
+                        text = stringResource(R.string.parameters_notifications_title),
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.onBackground
                     )
                     Text(
-                        text = "Recevoir une alerte avant la péremption d'un aliment",
+                        text = stringResource(R.string.parameters_notifications_subtitle),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -98,13 +102,13 @@ fun ParametersScreen(
             }
 
             Text(
-                text = "Délai avant péremption",
+                text = stringResource(R.string.parameters_delay_title),
                 style = MaterialTheme.typography.titleMedium,
                 color = delayTextColor
             )
 
             Text(
-                text = "Être alerté ${notifDelay} jour(s) avant la date de péremption",
+                text = stringResource(R.string.parameters_delay_subtitle, notifDelay),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 4.dp, bottom = 8.dp)
@@ -127,29 +131,39 @@ fun ParametersScreen(
 }
 
 @Composable
-private fun ParametersHeader(modifier: Modifier = Modifier, navController: NavHostController) {
+private fun ParametersHeader(
+    modifier: Modifier = Modifier,
+    navController: NavHostController,
+    appSettingsViewModel: AppSettingsViewModel
+) {
     Box(
         modifier = modifier
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp, top = 32.dp, bottom = 16.dp)
     ) {
         Text(
-            text = "Paramètres",
+            text = stringResource(R.string.parameters_title),
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.onBackground,
             textAlign = TextAlign.Start,
             modifier = Modifier.align(Alignment.CenterStart)
         )
 
-        IconButton(
-            onClick = { navController.navigate(Home) },
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.align(Alignment.CenterEnd)
         ) {
-            Icon(
-                imageVector = Icons.Filled.Home,
-                contentDescription = "Retour à l'accueil",
-                tint = MaterialTheme.colorScheme.onBackground
-            )
+            AppSettingsActions(appSettingsViewModel = appSettingsViewModel)
+
+            IconButton(
+                onClick = { navController.navigate(Home) }
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Home,
+                    contentDescription = stringResource(R.string.common_content_desc_back_to_home),
+                    tint = MaterialTheme.colorScheme.onBackground
+                )
+            }
         }
     }
 }
@@ -164,12 +178,12 @@ private fun DeleteDataSection(
 
     Column(modifier = modifier) {
         Text(
-            text = "Zone de danger",
+            text = stringResource(R.string.parameters_danger_zone_title),
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.error
         )
         Text(
-            text = "Supprime définitivement tous les aliments enregistrés",
+            text = stringResource(R.string.parameters_danger_zone_subtitle),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 4.dp, bottom = 12.dp)
@@ -183,15 +197,15 @@ private fun DeleteDataSection(
             ),
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Supprimer toutes les données")
+            Text(stringResource(R.string.parameters_delete_all_button))
         }
     }
 
     if (showDeleteConfirmation) {
         AlertDialog(
             onDismissRequest = { showDeleteConfirmation = false },
-            title = { Text("Supprimer toutes les données ?") },
-            text = { Text("Cette action est irréversible. Tous les aliments enregistrés seront définitivement supprimés.") },
+            title = { Text(stringResource(R.string.parameters_delete_confirm_title)) },
+            text = { Text(stringResource(R.string.parameters_delete_confirm_text)) },
             confirmButton = {
                 TextButton(
                     onClick = {
@@ -199,12 +213,12 @@ private fun DeleteDataSection(
                         showDeleteConfirmation = false
                     }
                 ) {
-                    Text("Supprimer", color = MaterialTheme.colorScheme.error)
+                    Text(stringResource(R.string.common_delete), color = MaterialTheme.colorScheme.error)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteConfirmation = false }) {
-                    Text("Annuler")
+                    Text(stringResource(R.string.common_cancel))
                 }
             }
         )

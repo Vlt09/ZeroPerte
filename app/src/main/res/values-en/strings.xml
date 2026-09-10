@@ -1,0 +1,86 @@
+<resources>
+    <string name="app_name">zeroPerte</string>
+
+    <!-- Common / shared -->
+    <string name="common_cancel">Cancel</string>
+    <string name="common_delete">Delete</string>
+    <string name="common_content_desc_back_to_home">Back to home</string>
+    <string name="common_content_desc_no_food">No food item</string>
+    <string name="common_expired">Expired</string>
+    <string name="common_expires_in_days">Expires in %1$d days</string>
+    <string name="common_food_name_label">Food name</string>
+    <string name="common_save_error">A problem occurred while saving the food item</string>
+
+    <!-- Dark mode / language actions -->
+    <string name="action_switch_to_dark_mode">Switch to dark mode</string>
+    <string name="action_switch_to_light_mode">Switch to light mode</string>
+    <string name="action_choose_language">Choose language</string>
+
+    <!-- Home screen -->
+    <string name="home_title">Home</string>
+    <string name="home_menu_foods">Food items</string>
+    <string name="home_menu_add">Add</string>
+    <string name="home_menu_parameters">Settings</string>
+    <string name="home_menu_coming_soon">Coming soon</string>
+
+    <!-- Parameters screen -->
+    <string name="parameters_title">Settings</string>
+    <string name="parameters_notifications_title">Notifications</string>
+    <string name="parameters_notifications_subtitle">Get alerted before a food item expires</string>
+    <string name="parameters_delay_title">Time before expiry</string>
+    <string name="parameters_delay_subtitle">Get alerted %1$d day(s) before the expiry date</string>
+    <string name="parameters_danger_zone_title">Danger zone</string>
+    <string name="parameters_danger_zone_subtitle">Permanently deletes all saved food items</string>
+    <string name="parameters_delete_all_button">Delete all data</string>
+    <string name="parameters_delete_confirm_title">Delete all data?</string>
+    <string name="parameters_delete_confirm_text">This action is irreversible. All saved food items will be permanently deleted.</string>
+
+    <!-- Food list screen -->
+    <string name="food_list_search_criteria_name">Name</string>
+    <string name="food_list_search_criteria_brand">Brand</string>
+    <string name="food_list_search_criteria_category">Category</string>
+    <string name="food_list_search_criteria_none">Search</string>
+    <string name="food_list_search_by">Search by %1$s</string>
+    <string name="food_list_content_desc_choose_criteria">Choose search criteria</string>
+    <string name="food_list_empty_title">No food items saved</string>
+    <string name="food_list_empty_subtitle">Add your first food item so you never miss an expiry date again</string>
+    <string name="food_list_add_content_desc">Add a food item</string>
+    <string name="food_list_photo_content_desc">Food photo</string>
+    <string name="food_list_delete_content_desc">Delete button</string>
+    <string name="food_list_status_valid">Valid</string>
+    <string name="food_list_status_expiring_soon">Expiring soon</string>
+    <string name="food_list_date_expiry">Expiry date: %1$s</string>
+    <string name="food_list_loading">Loading food items</string>
+
+    <!-- Food detail screen -->
+    <string name="food_detail_content_desc_back">Back</string>
+    <string name="food_detail_title">Food details</string>
+    <string name="food_detail_content_desc_delete">Delete food item</string>
+    <string name="food_detail_content_desc_photo">Food item photo</string>
+    <string name="food_detail_label_purchase_date">Purchase date</string>
+    <string name="food_detail_placeholder_date">mm/dd/yyyy</string>
+    <string name="food_detail_label_brand">Brand</string>
+    <string name="food_detail_na">N/A</string>
+    <string name="food_detail_label_comment">Comment</string>
+    <string name="food_detail_placeholder_comment">Enter</string>
+    <string name="food_detail_edit_button">Edit information</string>
+    <string name="food_detail_error_title">A problem occurred while retrieving the data</string>
+
+    <!-- Food create/update screen -->
+    <string name="food_create_update_saved_snackbar">Food item saved</string>
+    <string name="food_create_update_updated_snackbar">Food item updated</string>
+    <string name="food_create_update_title">New food item</string>
+    <string name="food_create_update_content_desc_save">Save</string>
+    <string name="food_create_update_content_desc_take_photo">Take a photo</string>
+    <string name="food_create_update_label_expiry_date">Expiry date</string>
+    <string name="food_create_update_content_desc_take_expiry_photo">Take a photo of the expiry date</string>
+    <string name="food_create_update_label_purchase_date">Purchase date (optional)</string>
+    <string name="food_create_update_label_amount">Quantity (optional)</string>
+    <string name="food_create_update_label_brand">Brand (optional)</string>
+    <string name="food_create_update_label_category">Category (optional)</string>
+    <string name="food_create_update_label_comment">Comment (optional)</string>
+    <string name="food_create_update_camera_permission_message">Camera access is required to take a photo</string>
+    <string name="food_create_update_allow_camera_button">Allow camera</string>
+    <string name="food_create_update_fab_take_photo">Take a photo of the expiry date</string>
+    <string name="food_create_update_camera_capture_content_desc">Camera capture icon</string>
+</resources>

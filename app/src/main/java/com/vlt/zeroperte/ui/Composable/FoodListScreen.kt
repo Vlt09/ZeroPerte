@@ -10,7 +10,6 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -74,6 +73,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -83,12 +83,14 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
+import com.vlt.zeroperte.R
 import com.vlt.zeroperte.business.FoodStatusCalculator
 import com.vlt.zeroperte.data.model.FoodDto
 import com.vlt.zeroperte.data.model.domain.FoodStatus
 import com.vlt.zeroperte.ui.FoodCreateUpdate
 import com.vlt.zeroperte.ui.FoodDetail
 import com.vlt.zeroperte.ui.Home
+import com.vlt.zeroperte.ui.ViewModel.AppSettingsViewModel
 import com.vlt.zeroperte.ui.ViewModel.FoodListViewModel
 import com.vlt.zeroperte.ui.theme.ColorFamily
 import com.vlt.zeroperte.ui.theme.extendedDark
@@ -109,12 +111,12 @@ data class FoodCardItem(
     val dtoRef: FoodDto
 )
 
-enum class SearchCriteria(val label: String) {
+enum class SearchCriteria {
 
-    Name("Nom"),
-    Brand("Marque"),
-    Category("Catégorie"),
-    NoSelected("Recherche");
+    Name,
+    Brand,
+    Category,
+    NoSelected;
 
     companion object {
         val allCriteria = listOf<SearchCriteria>(Name, Brand, Category)
@@ -123,13 +125,23 @@ enum class SearchCriteria(val label: String) {
 }
 
 @Composable
+fun SearchCriteria.displayLabel(): String = when (this) {
+    SearchCriteria.Name -> stringResource(R.string.food_list_search_criteria_name)
+    SearchCriteria.Brand -> stringResource(R.string.food_list_search_criteria_brand)
+    SearchCriteria.Category -> stringResource(R.string.food_list_search_criteria_category)
+    SearchCriteria.NoSelected -> stringResource(R.string.food_list_search_criteria_none)
+}
+
+@Composable
 fun FoodListScreen(
     modifier: Modifier,
     viewModel: FoodListViewModel = hiltViewModel(),
-    navController: NavHostController
+    navController: NavHostController,
+    appSettingsViewModel: AppSettingsViewModel
 ){
     val foodListUiState by viewModel.uiState.collectAsStateWithLifecycle()
     val filterState by viewModel.filterUiState.collectAsStateWithLifecycle()
+    val appSettingsUiState by appSettingsViewModel.uiState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope() // Use when User trigger Delete button
 
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -157,10 +169,12 @@ fun FoodListScreen(
             foodListUiState as FoodListViewModel.FoodListUiState.Content,
             coroutineScope,
             filterState,
-            navController
+            navController,
+            appSettingsViewModel,
+            appSettingsUiState.darkModeEnabled
         )
         is FoodListViewModel.FoodListUiState.Empty -> EmptyFoodItem(modifier)
-        FoodListViewModel.FoodListUiState.Loading -> Text("Loading foods")
+        FoodListViewModel.FoodListUiState.Loading -> Text(stringResource(R.string.food_list_loading))
         else -> {
                 Log.i(TAG, "else statement foodListUiState : $foodListUiState")
             }
@@ -176,7 +190,9 @@ private fun FoodListLazyColumn(
     content: FoodListViewModel.FoodListUiState.Content,
     coroutineScope: CoroutineScope,
     filterState: FoodListViewModel.FilterState,
-    navController: NavHostController
+    navController: NavHostController,
+    appSettingsViewModel: AppSettingsViewModel,
+    isDarkTheme: Boolean
 ) {
     Log.i(TAG, "FoodListViewModel.FoodListUiState.Content")
 
@@ -205,6 +221,7 @@ private fun FoodListLazyColumn(
             Column(modifier = Modifier.fillMaxWidth()) {
                 FoodHeader(
                     navController = navController,
+                    appSettingsViewModel = appSettingsViewModel,
                     modifier = Modifier.align(Alignment.End)
                 )
 
@@ -222,7 +239,8 @@ private fun FoodListLazyColumn(
             }
 
             FoodStatusFilterRow(filterState = filterState,
-                onStatusClick = {foodStatus -> viewModel.toggleStatus(foodStatus)})
+                onStatusClick = {foodStatus -> viewModel.toggleStatus(foodStatus)},
+                isDarkTheme = isDarkTheme)
 
         }
 
@@ -248,6 +266,7 @@ private fun FoodListLazyColumn(
                 FoodCard(modifier = modifier,
                     foodCardItem = foodCardItem,
                     navController = navController,
+                    isDarkTheme = isDarkTheme,
                     onDeleteClick = {
                         visible = false
 
@@ -302,20 +321,20 @@ internal fun EmptyFoodItem(modifier: Modifier = Modifier) {
     ) {
         Icon(
             imageVector = Icons.Filled.NoFood,
-            contentDescription = "Aucun aliment",
+            contentDescription = stringResource(R.string.common_content_desc_no_food),
             tint = onBackgroundVariant,
             modifier = Modifier.size(64.dp)
         )
 
         BasicText(
-            text = "Aucun aliment enregistré",
+            text = stringResource(R.string.food_list_empty_title),
             autoSize = TextAutoSize.StepBased(maxFontSize = 24.sp),
             style = TextStyle(fontWeight = FontWeight.Bold, textAlign = TextAlign.Center),
             color = { onBackground },
         )
 
         BasicText(
-            text = "Ajoutez votre premier aliment pour ne plus jamais rater une date de péremption",
+            text = stringResource(R.string.food_list_empty_subtitle),
             autoSize = TextAutoSize.StepBased(maxFontSize = 16.sp),
             style = TextStyle(textAlign = TextAlign.Center),
             color = { onBackgroundVariant },
@@ -330,21 +349,28 @@ internal fun AddFoodFab(onClick: () -> Unit = {}, navController: NavHostControll
             navController.navigate(FoodCreateUpdate(null))
         }
     ) {
-        Icon(Icons.Filled.Add, contentDescription = "Ajouter un aliment")
+        Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.food_list_add_content_desc))
     }
 }
 
 @Composable
-internal fun FoodHeader(modifier: Modifier = Modifier, navController: NavHostController) {
-        IconButton(
-            onClick = { navController.navigate(Home) },
-            modifier = modifier
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Home,
-                contentDescription = "Retour à l'accueil",
-                tint = MaterialTheme.colorScheme.onBackground
-            )
+internal fun FoodHeader(
+    modifier: Modifier = Modifier,
+    navController: NavHostController,
+    appSettingsViewModel: AppSettingsViewModel
+) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = modifier) {
+            AppSettingsActions(appSettingsViewModel = appSettingsViewModel)
+
+            IconButton(
+                onClick = { navController.navigate(Home) }
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Home,
+                    contentDescription = stringResource(R.string.common_content_desc_back_to_home),
+                    tint = MaterialTheme.colorScheme.onBackground
+                )
+            }
         }
 }
 
@@ -354,9 +380,10 @@ internal fun FoodCard(
     modifier: Modifier = Modifier,
     foodCardItem: FoodCardItem,
     onDeleteClick: () -> Unit,
-    navController: NavHostController
+    navController: NavHostController,
+    isDarkTheme: Boolean
 ) {
-    val extendedColors = if (isSystemInDarkTheme()) extendedDark else extendedLight
+    val extendedColors = if (isDarkTheme) extendedDark else extendedLight
 
     val cardColor = when {
         foodCardItem.remainingDay <= 0 -> extendedColors.expiredCard
@@ -382,7 +409,7 @@ internal fun FoodCard(
 
             Icon(
                 imageVector = Icons.Filled.Photo,
-                contentDescription = "Photo Aliment",
+                contentDescription = stringResource(R.string.food_list_photo_content_desc),
                 tint = extendedColors.expiredCard.onColor,
                 modifier = Modifier.size(90.dp)
             )
@@ -406,7 +433,7 @@ internal fun FoodCard(
 
                 ) {
                     BasicText(
-                        text = "Expire dans ${foodCardItem.remainingDay} jours",
+                        text = stringResource(R.string.common_expires_in_days, foodCardItem.remainingDay),
                         autoSize = TextAutoSize.StepBased(maxFontSize = 20.sp),
                         style = MaterialTheme.typography.headlineMedium,
                         color = {cardColor.expiredSoonCardTypoDark1},
@@ -418,7 +445,7 @@ internal fun FoodCard(
 
                     ) {
                         BasicText(
-                            text = "Date de péremption : ${foodCardItem.expiryDate}",
+                            text = stringResource(R.string.food_list_date_expiry, foodCardItem.expiryDate.toString()),
                             autoSize = TextAutoSize.StepBased(maxFontSize = 12.sp),
                             style = MaterialTheme.typography.headlineSmall,
                             color = {cardColor.expiredSoonCardTypoDark1},
@@ -436,7 +463,7 @@ internal fun FoodCard(
                 IconButton(onClick = onDeleteClick, modifier = Modifier.fillMaxWidth()){
                     Icon(
                         imageVector = Icons.Filled.Delete,
-                        contentDescription = "Delete button",
+                        contentDescription = stringResource(R.string.food_list_delete_content_desc),
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(bottom = 12.dp)
                             .size(30.dp)
@@ -453,9 +480,10 @@ internal fun FoodCard(
 internal fun FoodStatusFilterRow(
     filterState: FoodListViewModel.FilterState,
     onStatusClick: (FoodStatus) -> Unit,
+    isDarkTheme: Boolean,
     modifier: Modifier = Modifier
 ) {
-    val extendedColors = if (isSystemInDarkTheme()) extendedDark else extendedLight
+    val extendedColors = if (isDarkTheme) extendedDark else extendedLight
 
     Row(
         modifier = modifier
@@ -464,7 +492,7 @@ internal fun FoodStatusFilterRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         FilterStatusButton(
-            text = "Valide",
+            text = stringResource(R.string.food_list_status_valid),
             colorFamily = extendedColors.validCard,
             selected = filterState.selectedStatus == FoodStatus.Edible,
             onClick = { onStatusClick(FoodStatus.Edible) },
@@ -472,7 +500,7 @@ internal fun FoodStatusFilterRow(
         )
 
         FilterStatusButton(
-            text = "Expire bientôt",
+            text = stringResource(R.string.food_list_status_expiring_soon),
             colorFamily = extendedColors.expiredSoonCard,
             selected = filterState.selectedStatus == FoodStatus.ExpiringSoon,
             onClick = { onStatusClick(FoodStatus.ExpiringSoon) },
@@ -480,7 +508,7 @@ internal fun FoodStatusFilterRow(
         )
 
         FilterStatusButton(
-            text = "Expiré",
+            text = stringResource(R.string.common_expired),
             colorFamily = extendedColors.expiredCard,
             selected = filterState.selectedStatus == FoodStatus.Expired,
             onClick = { onStatusClick(FoodStatus.Expired) },
@@ -557,10 +585,10 @@ fun FoodSearchBar(
                     onExpandedChange = { expanded = false },
                     placeholder = {
                         if (selectedCriteria == SearchCriteria.NoSelected){
-                            Text(selectedCriteria.label)
+                            Text(selectedCriteria.displayLabel())
                         }
                         else{
-                            Text("Rechercher par ${selectedCriteria.label}")
+                            Text(stringResource(R.string.food_list_search_by, selectedCriteria.displayLabel()))
                         }
                       },
                     trailingIcon = {
@@ -573,7 +601,7 @@ fun FoodSearchBar(
                                 }) {
                                 Icon(
                                     imageVector = Icons.Filled.Close,
-                                    contentDescription = "Choisir le critère de recherche"
+                                    contentDescription = stringResource(R.string.food_list_content_desc_choose_criteria)
                                 )
                             }
 
@@ -583,7 +611,7 @@ fun FoodSearchBar(
                             ) {
                                 Icon(
                                     imageVector = Icons.Filled.FilterList,
-                                    contentDescription = "Choisir le critère de recherche"
+                                    contentDescription = stringResource(R.string.food_list_content_desc_choose_criteria)
                                 )
                             }
 
@@ -594,7 +622,7 @@ fun FoodSearchBar(
                                 SearchCriteria.entries.filter { c -> c != SearchCriteria.NoSelected }
                                     .forEach { criteria ->
                                         DropdownMenuItem(
-                                            text = { Text(criteria.label) },
+                                            text = { Text(criteria.displayLabel()) },
                                             onClick = {
                                                 onCriteriaSelected(criteria)
                                                 menuExpanded = false

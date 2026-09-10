@@ -65,6 +65,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -78,8 +79,10 @@ import androidx.navigation.NavHostController
 import ch.benlu.composeform.fields.DateField
 import ch.benlu.composeform.fields.TextField
 import ch.benlu.composeform.formatters.dateLong
+import com.vlt.zeroperte.R
 import com.vlt.zeroperte.business.TextRecognitionHelper
 import com.vlt.zeroperte.ui.FoodList
+import com.vlt.zeroperte.ui.ViewModel.AppSettingsViewModel
 import com.vlt.zeroperte.ui.ViewModel.FoodCreateUpdateViewModel
 import com.vlt.zeroperte.utils.Converters
 import kotlinx.coroutines.delay
@@ -106,7 +109,8 @@ fun FoodCreateUpdateScreen(
     viewModel: FoodCreateUpdateViewModel = hiltViewModel(),
     foodId: Long?,
     navController: NavHostController,
-    activity: Activity
+    activity: Activity,
+    appSettingsViewModel: AppSettingsViewModel
 ) {
 
     val viewState = viewModel.viewState.collectAsStateWithLifecycle()
@@ -121,16 +125,20 @@ fun FoodCreateUpdateScreen(
             }
     }
 
+    val savedMessage = stringResource(R.string.food_create_update_saved_snackbar)
+    val updatedMessage = stringResource(R.string.food_create_update_updated_snackbar)
+    val errorMessage = stringResource(R.string.common_save_error)
+
     LaunchedEffect(viewState.value, foodId) {
         when (viewState.value) {
             is FoodCreateUpdateViewModel.ViewState.Create -> {
-                snackbarHostState.showSnackbar("Aliment enregistré")
+                snackbarHostState.showSnackbar(savedMessage)
             }
             FoodCreateUpdateViewModel.ViewState.Updated -> {
-                snackbarHostState.showSnackbar("Aliment mis à jour")
+                snackbarHostState.showSnackbar(updatedMessage)
             }
             FoodCreateUpdateViewModel.ViewState.Failure -> {
-                snackbarHostState.showSnackbar("Problème pendant l'enregistrement de l'aliment")
+                snackbarHostState.showSnackbar(errorMessage)
             }
             FoodCreateUpdateViewModel.ViewState.Waiting -> {}
             else -> {}
@@ -168,14 +176,14 @@ fun FoodCreateUpdateScreen(
                     }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Annuler",
+                                contentDescription = stringResource(R.string.common_cancel),
                                 tint = MaterialTheme.colorScheme.onBackground,
                                 modifier = Modifier.padding(end = 13.dp)
                             )
                         }
 
                         Text(
-                            text = "Annuler",
+                            text = stringResource(R.string.common_cancel),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onBackground,
                         )
@@ -184,11 +192,13 @@ fun FoodCreateUpdateScreen(
 
 
                     Text(
-                        text = "Nouvel aliment",
+                        text = stringResource(R.string.food_create_update_title),
                         style = MaterialTheme.typography.headlineMedium,
                         color = MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.padding(start = 37.dp)
                     )
+
+                    AppSettingsActions(appSettingsViewModel = appSettingsViewModel)
 
                     IconButton(onClick = {
                         coroutineScope.launch {
@@ -198,7 +208,7 @@ fun FoodCreateUpdateScreen(
                     }, modifier = Modifier.fillMaxWidth()) {
                         Icon(
                             imageVector = Icons.Filled.Save,
-                            contentDescription = "Enregistrer",
+                            contentDescription = stringResource(R.string.food_create_update_content_desc_save),
                             tint = MaterialTheme.colorScheme.onBackground,
                             modifier = Modifier.padding(start = 25.dp, top = 3.dp)
                                 .size(32.dp)
@@ -255,14 +265,14 @@ private fun FormFieldsUi(
             onClick = {showCameraDialog = true}) {
             Icon(
                 imageVector = Icons.Filled.PhotoCamera,
-                contentDescription = "Choisir le critère de recherche"
+                contentDescription = stringResource(R.string.food_create_update_content_desc_take_photo)
             )
         }
 
         Column {
             // Entry name
             TextField(
-                label = "Nom de l'aliment",
+                label = stringResource(R.string.common_food_name_label),
                 form = viewModel.form,
                 fieldState = viewModel.form.name
             ).Field()
@@ -270,7 +280,7 @@ private fun FormFieldsUi(
             // --- Date de péremption (obligatoire) ---
             Box() {
                 DateField(
-                    label = "Date de péremption",
+                    label = stringResource(R.string.food_create_update_label_expiry_date),
                     form = viewModel.form,
                     fieldState = viewModel.form.expiryDate,
                     formatter = ::dateLong,
@@ -287,7 +297,7 @@ private fun FormFieldsUi(
                 ) {
                     Icon(
                         imageVector = Icons.Filled.PhotoCamera,
-                        contentDescription = "Prendre une photo de la date de péremption"
+                        contentDescription = stringResource(R.string.food_create_update_content_desc_take_expiry_photo)
                     )
                 }
 
@@ -316,7 +326,7 @@ private fun FormFieldsUi(
 
     // --- Date d'achat (optionnelle) ---
     DateField(
-        label = "Date d'achat (optionnelle)",
+        label = stringResource(R.string.food_create_update_label_purchase_date),
         form = viewModel.form,
         fieldState = viewModel.form.datePurchased,
         formatter = ::dateLong,
@@ -327,7 +337,7 @@ private fun FormFieldsUi(
 
     // Amount
     TextField(
-        label = "Quantité (optionnelle)",
+        label = stringResource(R.string.food_create_update_label_amount),
         form = viewModel.form,
         fieldState = viewModel.form.amount,
         modifier = Modifier
@@ -339,7 +349,7 @@ private fun FormFieldsUi(
 
     // --- Marque (optionnelle) ---
     TextField(
-        label = "Marque (optionnelle)",
+        label = stringResource(R.string.food_create_update_label_brand),
         form = viewModel.form,
         fieldState = viewModel.form.brand,
         modifier = Modifier
@@ -349,7 +359,7 @@ private fun FormFieldsUi(
 
     // --- Marque (optionnelle) ---
     TextField(
-        label = "Catégorie (optionnelle)",
+        label = stringResource(R.string.food_create_update_label_category),
         form = viewModel.form,
         fieldState = viewModel.form.category,
         modifier = Modifier
@@ -359,7 +369,7 @@ private fun FormFieldsUi(
 
     // --- Commentaire (optionnel) ---
     TextField(
-        label = "Commentaire (optionnelle)",
+        label = stringResource(R.string.food_create_update_label_comment),
         form = viewModel.form,
         fieldState = viewModel.form.comment,
         modifier = Modifier
@@ -383,7 +393,7 @@ internal fun SaveSuccessMessage(onFinished: () -> Unit) {
             .padding(16.dp)
     ) {
         Text(
-            text = "Aliment enregistré",
+            text = stringResource(R.string.food_create_update_saved_snackbar),
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onPrimaryContainer,
             modifier = Modifier.padding(16.dp)
@@ -393,7 +403,7 @@ internal fun SaveSuccessMessage(onFinished: () -> Unit) {
 
 @Composable
 internal fun SaveErrorMessage(
-    message: String = "Problème pendant l'enregistrement de l'aliment"
+    message: String = stringResource(R.string.common_save_error)
 ) {
     Surface(
         shape = RoundedCornerShape(8.dp),
@@ -442,9 +452,9 @@ fun CameraBox(onTextRecognized: (String?) -> Unit) {
             floatingActionButton = {
                 ExtendedFloatingActionButton(
                     modifier = Modifier.padding(end = 25.dp),
-                    text = { Text(text = "Prendre en photo la date de péremption") },
+                    text = { Text(text = stringResource(R.string.food_create_update_fab_take_photo)) },
                     onClick = { capturePhoto(context, cameraController, onTextRecognized) },
-                    icon = { Icon(imageVector = Icons.Default.Camera, contentDescription = "Camera capture icon") }
+                    icon = { Icon(imageVector = Icons.Default.Camera, contentDescription = stringResource(R.string.food_create_update_camera_capture_content_desc)) }
                 )
         }) { paddingValues ->
         if (hasCameraPermission) {
@@ -471,7 +481,7 @@ fun CameraBox(onTextRecognized: (String?) -> Unit) {
                 verticalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = "L'accès à la caméra est nécessaire pour prendre une photo",
+                    text = stringResource(R.string.food_create_update_camera_permission_message),
                     style = MaterialTheme.typography.bodyLarge,
                     textAlign = TextAlign.Center
                 )
@@ -479,7 +489,7 @@ fun CameraBox(onTextRecognized: (String?) -> Unit) {
                     onClick = { permissionLauncher.launch(Manifest.permission.CAMERA) },
                     modifier = Modifier.padding(top = 16.dp)
                 ) {
-                    Text("Autoriser la caméra")
+                    Text(stringResource(R.string.food_create_update_allow_camera_button))
                 }
             }
         }
