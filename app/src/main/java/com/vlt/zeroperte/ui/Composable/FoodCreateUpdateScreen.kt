@@ -1,23 +1,33 @@
 package com.vlt.zeroperte.ui.Composable
 
+import android.Manifest
 import android.app.Activity
 import android.content.ContentValues.TAG
+import android.content.Context
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
 import android.util.Log
 import androidx.camera.core.CameraSelector
 import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
 import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.widget.LinearLayout
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.lifecycle.awaitInstance
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -27,11 +37,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Camera
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -53,8 +65,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -71,6 +87,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Date
+import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
 /**
@@ -275,13 +292,20 @@ private fun FormFieldsUi(
                 }
 
                 if (showCameraDialog) {
-                    CameraBox {
-                        if (it != null){
-                            recognizedDate = it
-                            viewModel.form.expiryDate.state.value = Converters.fromStringDateToDate(it)
-                            Log.i(TAG, "recognizedDate $recognizedDate")
+                    Dialog(
+                        onDismissRequest = { showCameraDialog = false },
+                        properties = DialogProperties(
+                            usePlatformDefaultWidth = false, decorFitsSystemWindows = false
+                        )
+                    ){
+                        CameraBox {
+                            if (it != null){
+                                recognizedDate = it
+                                viewModel.form.expiryDate.state.value = Converters.fromStringDateToDate(it)
+                                Log.i(TAG, "recognizedDate $recognizedDate")
+                            }
+                            showCameraDialog = false
                         }
-                        showCameraDialog = false
                     }
                 }
             }
@@ -390,73 +414,96 @@ internal fun SaveErrorMessage(
 @Composable
 fun CameraBox(onTextRecognized: (String?) -> Unit) {
     val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
-    val previewView = remember {
-        PreviewView(context).apply {
-            /*layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )*/
-            scaleType = PreviewView.ScaleType.FILL_CENTER
-        }
-    }
-    val cameraProviderFuture = remember { ProcessCameraProvider.getInstance(context) }
-    val imageCapture = remember { ImageCapture.Builder().build() }
-    val cameraExecutor = remember { Executors.newSingleThreadExecutor() }
-    // Bind camera
-    LaunchedEffect(Unit) {
-        try {
-            val cameraProvider = cameraProviderFuture.get()
-            val preview = Preview.Builder().build().apply {
-                surfaceProvider = previewView.surfaceProvider
-            }
-            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-            cameraProvider.unbindAll()
-            cameraProvider.bindToLifecycle(
-                lifecycleOwner,
-                cameraSelector,
-                preview,
-                imageCapture
-            )
-        } catch (e: Exception) {
-            Log.e("CameraBox", "Camera initialization failed", e)
-        }
-    }
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(2.dp, Color.Gray, RoundedCornerShape(16.dp))
-            .clip(RoundedCornerShape(16.dp))
-            .aspectRatio(1f)
-            .background(Color.Black)
-    ) {
-        AndroidView(
-            factory = { previewView },
-            modifier = Modifier.fillMaxSize()
-        )
-        Button(
-            onClick = {
-                imageCapture.takePicture(
-                    cameraExecutor,
-                    object : ImageCapture.OnImageCapturedCallback() {
-                        override fun onCaptureSuccess(image: ImageProxy) {
-                            TextRecognitionHelper.recognizeTextFromImage( image) {
-                                onTextRecognized(it)
-                            }
-                            Log.i("CameraPreview", "Capture sucess")
+    val lifeCycleOwner = LocalLifecycleOwner.current
+    val cameraController = remember { LifecycleCameraController(context) }
 
-                        }
-                        override fun onError(exception: ImageCaptureException) {
-                            Log.e("CameraPreview", "Capture failed: ${exception.message}", exception)
-                        }
-                    }
-                )
-            },
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(12.dp)
-        ) {
-            Text("Capture")
+    var hasCameraPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        hasCameraPermission = isGranted
+    }
+
+    LaunchedEffect(Unit) {
+        if (!hasCameraPermission) {
+            permissionLauncher.launch(Manifest.permission.CAMERA)
         }
     }
+
+    Scaffold(modifier = Modifier.fillMaxSize(),
+            floatingActionButton = {
+                ExtendedFloatingActionButton(
+                    modifier = Modifier.padding(end = 25.dp),
+                    text = { Text(text = "Prendre en photo la date de péremption") },
+                    onClick = { capturePhoto(context, cameraController, onTextRecognized) },
+                    icon = { Icon(imageVector = Icons.Default.Camera, contentDescription = "Camera capture icon") }
+                )
+        }) { paddingValues ->
+        if (hasCameraPermission) {
+            AndroidView(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                factory = { ctx ->
+                    PreviewView(ctx).apply {
+                        layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT)
+                    }.also { previewView ->
+                        previewView.controller = cameraController
+                        cameraController.bindToLifecycle(lifeCycleOwner)
+                    }
+                }
+            )
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Text(
+                    text = "L'accès à la caméra est nécessaire pour prendre une photo",
+                    style = MaterialTheme.typography.bodyLarge,
+                    textAlign = TextAlign.Center
+                )
+                Button(
+                    onClick = { permissionLauncher.launch(Manifest.permission.CAMERA) },
+                    modifier = Modifier.padding(top = 16.dp)
+                ) {
+                    Text("Autoriser la caméra")
+                }
+            }
+        }
+    }
+}
+
+private fun capturePhoto(
+    context: Context,
+    cameraController: LifecycleCameraController,
+    onTextRecognized: (String?) -> Unit
+) {
+    val mainExecutor: Executor = ContextCompat.getMainExecutor(context)
+
+    cameraController.takePicture(mainExecutor, object : ImageCapture.OnImageCapturedCallback() {
+        override fun onCaptureSuccess(image: ImageProxy) {
+            TextRecognitionHelper.recognizeTextFromImage( image) {
+                onTextRecognized(it)
+            }
+
+            image.close()
+        }
+
+        override fun onError(exception: ImageCaptureException) {
+            Log.e("CameraContent", "Error capturing image", exception)
+        }
+    })
 }
