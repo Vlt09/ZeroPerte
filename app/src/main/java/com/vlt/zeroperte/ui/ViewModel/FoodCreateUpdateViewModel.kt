@@ -1,6 +1,7 @@
 package com.vlt.zeroperte.ui.ViewModel
 
 import android.content.ContentValues.TAG
+import android.graphics.Bitmap
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.vlt.zeroperte.data.FoodRepository

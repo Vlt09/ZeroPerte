@@ -7,10 +7,8 @@ import android.content.Context
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.util.Log
-import androidx.camera.core.CameraSelector
 import androidx.camera.view.CameraController
 import androidx.camera.view.LifecycleCameraController
-import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.widget.LinearLayout
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -18,18 +16,14 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
-import androidx.camera.core.Preview
-import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.lifecycle.awaitInstance
 import androidx.camera.view.PreviewView
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -38,7 +32,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Camera
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.Button
@@ -63,7 +56,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -91,17 +84,7 @@ import java.time.LocalDate
 import java.time.ZoneId
 import java.util.Date
 import java.util.concurrent.Executor
-import java.util.concurrent.Executors
 
-/**
- * Écran d'ajout/modification d'aliment.
- *
- * NOTE : version statique pour l'instant (état local via `remember`).
- * Le câblage vers un vrai FoodCreateUpdateViewModel (validation, sauvegarde,
- * pré-remplissage en mode édition) reste à faire ensuite.
- * Le champ de date est ici un simple texte — un vrai DatePickerDialog
- * Material3 est une étape séparée, à connecter sur onClick du champ.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FoodCreateUpdateScreen(
@@ -256,20 +239,45 @@ private fun FormFieldsUi(
 
     var recognizedDate by remember { mutableStateOf("") }
     var showCameraDialog by remember { mutableStateOf(false) }
+    var foodPhoto by remember { mutableStateOf<Bitmap?>(null) }
 
 
     Row(horizontalArrangement = Arrangement.Center) {
-        IconButton(
-            modifier = Modifier.size(150.dp)
-                .padding(top = 5.dp),
-            onClick = {showCameraDialog = true}) {
-            Icon(
-                imageVector = Icons.Filled.PhotoCamera,
-                contentDescription = stringResource(R.string.food_create_update_content_desc_take_photo)
-            )
+
+        Box(
+            modifier = Modifier
+                .padding(top = 15.dp)
+                .size(100.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+                .clickable{showCameraDialog = true},
+            contentAlignment = Alignment.Center
+        ) {
+            if (foodPhoto == null){
+                Icon(
+                    imageVector = Icons.Filled.PhotoCamera,
+                    contentDescription = "Photo de l'aliment",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(48.dp)
+                )
+            }
+            else{
+                Image(bitmap = foodPhoto!!.asImageBitmap(), contentDescription = "Photo de l'aliment")
+            }
         }
 
-        Column {
+        if (showCameraDialog) {
+            Dialog(
+                onDismissRequest = { showCameraDialog = false },
+                properties = DialogProperties(usePlatformDefaultWidth = false)
+            ) {
+                /*CameraBox { imageProxy ->
+                    foodPhoto = imageProxy.toBitmap()
+                }*/
+            }
+        }
+
+        Column(modifier = Modifier.padding(start = 5.dp)) {
             // Entry name
             TextField(
                 label = stringResource(R.string.common_food_name_label),
@@ -308,11 +316,13 @@ private fun FormFieldsUi(
                             usePlatformDefaultWidth = false, decorFitsSystemWindows = false
                         )
                     ){
-                        CameraBox {
-                            if (it != null){
-                                recognizedDate = it
-                                viewModel.form.expiryDate.state.value = Converters.fromStringDateToDate(it)
-                                Log.i(TAG, "recognizedDate $recognizedDate")
+                        CameraBox {image ->
+                            TextRecognitionHelper.recognizeTextFromImage( image) { date ->
+                                if (date != null){
+                                    recognizedDate = date
+                                    viewModel.form.expiryDate.state.value = Converters.fromStringDateToDate(date)
+                                    Log.i(TAG, "recognizedDate $recognizedDate")
+                                }
                             }
                             showCameraDialog = false
                         }
@@ -320,9 +330,8 @@ private fun FormFieldsUi(
                 }
             }
         }
-
-
     }
+
 
     // --- Date d'achat (optionnelle) ---
     DateField(
@@ -422,7 +431,7 @@ internal fun SaveErrorMessage(
 }
 
 @Composable
-fun CameraBox(onTextRecognized: (String?) -> Unit) {
+fun CameraBox(onCameraProcess: (ImageProxy) -> Unit) {
     val context = LocalContext.current
     val lifeCycleOwner = LocalLifecycleOwner.current
     val cameraController = remember { LifecycleCameraController(context) }
@@ -453,7 +462,7 @@ fun CameraBox(onTextRecognized: (String?) -> Unit) {
                 ExtendedFloatingActionButton(
                     modifier = Modifier.padding(end = 25.dp),
                     text = { Text(text = stringResource(R.string.food_create_update_fab_take_photo)) },
-                    onClick = { capturePhoto(context, cameraController, onTextRecognized) },
+                    onClick = { capturePhoto(context, cameraController, onCameraProcess) },
                     icon = { Icon(imageVector = Icons.Default.Camera, contentDescription = stringResource(R.string.food_create_update_camera_capture_content_desc)) }
                 )
         }) { paddingValues ->
@@ -499,16 +508,13 @@ fun CameraBox(onTextRecognized: (String?) -> Unit) {
 private fun capturePhoto(
     context: Context,
     cameraController: LifecycleCameraController,
-    onTextRecognized: (String?) -> Unit
+    onTakenPhoto: (ImageProxy) -> Unit
 ) {
     val mainExecutor: Executor = ContextCompat.getMainExecutor(context)
 
     cameraController.takePicture(mainExecutor, object : ImageCapture.OnImageCapturedCallback() {
         override fun onCaptureSuccess(image: ImageProxy) {
-            TextRecognitionHelper.recognizeTextFromImage( image) {
-                onTextRecognized(it)
-            }
-
+            onTakenPhoto(image)
             image.close()
         }
 
