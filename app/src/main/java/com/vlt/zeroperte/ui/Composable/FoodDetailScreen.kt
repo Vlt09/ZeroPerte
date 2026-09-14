@@ -56,6 +56,7 @@ import java.time.temporal.ChronoUnit
 
 data class FoodDetailItem(
     val name: String,
+    val category: String?,
     val brand: String?,
     val purchaseDate: LocalDate?,
     val expiryDate: LocalDate,
@@ -109,6 +110,7 @@ fun FoodDetailScreen(
                 foodDetail = FoodDetailItem(
                     id = successState.foodDto.id,
                     name = successState.foodDto.name,
+                    category = successState.foodDto.category,
                     brand = successState.foodDto.brand,
                     purchaseDate = successState.foodDto.datePurchased,
                     expiryDate = successState.foodDto.expiryDate,
@@ -199,7 +201,7 @@ private fun FoodDetailUI(
                     .fillMaxWidth()
                     .padding(bottom = 24.dp)
             ) {
-                Box(
+                /*Box(
                     modifier = Modifier
                         .weight(1f)
                         .aspectRatio(1.2f)
@@ -213,12 +215,11 @@ private fun FoodDetailUI(
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(32.dp)
                     )
-                }
+                }*/
 
                 Box(
                     modifier = Modifier
-                        .weight(1f)
-                        .aspectRatio(1.2f)
+                        .aspectRatio(2.3f)
                         .clip(RoundedCornerShape(12.dp))
                         .background(statusColor.color),
                     contentAlignment = Alignment.Center
@@ -229,7 +230,7 @@ private fun FoodDetailUI(
                         } else {
                             stringResource(R.string.common_expires_in_days, foodDetail.remainingDays)
                         },
-                        style = MaterialTheme.typography.titleMedium,
+                        style = MaterialTheme.typography.titleLarge,
                         color = statusColor.onColor,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(12.dp)
@@ -246,6 +247,11 @@ private fun FoodDetailUI(
             ReadOnlyDetailField(
                 label = stringResource(R.string.food_detail_label_purchase_date),
                 value = foodDetail.purchaseDate?.format(dateFormatter) ?: stringResource(R.string.food_detail_placeholder_date)
+            )
+
+            ReadOnlyDetailField(
+                label = stringResource(R.string.food_detail_category),
+                value = foodDetail.category ?: stringResource(R.string.food_detail_na)
             )
 
             ReadOnlyDetailField(

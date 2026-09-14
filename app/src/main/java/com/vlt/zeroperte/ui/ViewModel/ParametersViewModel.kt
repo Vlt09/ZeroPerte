@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import javax.inject.Inject
+import androidx.core.content.edit
 
 
 @HiltViewModel
@@ -68,12 +69,12 @@ class ParametersViewModel @Inject constructor(application: Application,
     }
 
     private fun saveNotifDelayToPreference(notifDelay: Int) {
-        preferenceNotif.edit().putInt("notif_delay", notifDelay).apply()
+        preferenceNotif.edit { putInt("notif_delay", notifDelay) }
         Log.i("ParametersVm", "notif_delay saved: $notifDelay")
     }
 
     private fun saveNotifActivationToPreference(notifEnabled: Boolean) {
-        preferenceNotif.edit().putBoolean("notif_enabled", notifEnabled).apply()
+        preferenceNotif.edit { putBoolean("notif_enabled", notifEnabled) }
         Log.i("ParametersVm", "notif_enabled saved: $notifEnabled")
     }
 

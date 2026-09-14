@@ -58,6 +58,7 @@
     <string name="food_detail_content_desc_delete">Supprimer l\'aliment</string>
     <string name="food_detail_content_desc_photo">Photo de l\'aliment</string>
     <string name="food_detail_label_purchase_date">Date d\'achat</string>
+    <string name="food_detail_category">Catégorie</string>
     <string name="food_detail_placeholder_date">mm/dd/yyyy</string>
     <string name="food_detail_label_brand">Marque</string>
     <string name="food_detail_na">N/A</string>
@@ -83,4 +84,19 @@
     <string name="food_create_update_allow_camera_button">Autoriser la caméra</string>
     <string name="food_create_update_fab_take_photo">Prendre en photo la date de péremption</string>
     <string name="food_create_update_camera_capture_content_desc">Icône de capture caméra</string>
+
+    <!-- Category item list -->
+    <string-array name="food_category">
+        <item>Fruits et légumes</item>
+        <item>Féculents</item>
+        <item>Légumineuses</item>
+        <item>Produits laitiers</item>
+        <item>Matière grasse</item>
+        <item>Viande</item>
+        <item>Poisson et fruits de mer</item>
+        <item>Sucreries</item>
+        <item>Boisson</item>
+        <item>Eau</item>
+    </string-array>
+
 </resources>

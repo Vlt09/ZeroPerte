@@ -17,9 +17,6 @@ import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
 import androidx.camera.view.PreviewView
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -55,9 +52,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -70,10 +66,13 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import ch.benlu.composeform.fields.DateField
+import ch.benlu.composeform.fields.PickerField
 import ch.benlu.composeform.fields.TextField
 import ch.benlu.composeform.formatters.dateLong
 import com.vlt.zeroperte.R
 import com.vlt.zeroperte.business.TextRecognitionHelper
+import com.vlt.zeroperte.data.model.domain.AppLanguage
+import com.vlt.zeroperte.composeforms.FoodGroup
 import com.vlt.zeroperte.ui.FoodList
 import com.vlt.zeroperte.ui.ViewModel.AppSettingsViewModel
 import com.vlt.zeroperte.ui.ViewModel.FoodCreateUpdateViewModel
@@ -97,6 +96,7 @@ fun FoodCreateUpdateScreen(
 ) {
 
     val viewState = viewModel.viewState.collectAsStateWithLifecycle()
+    val appSettingsState = appSettingsViewModel.uiState.collectAsStateWithLifecycle()
     val coroutineScope = rememberCoroutineScope() // Use when User trigger Saved button
     val snackbarHostState = remember { SnackbarHostState() }
     val controller = remember {
@@ -182,22 +182,6 @@ fun FoodCreateUpdateScreen(
                     )
 
                     AppSettingsActions(appSettingsViewModel = appSettingsViewModel)
-
-                    IconButton(onClick = {
-                        coroutineScope.launch {
-                            viewModel.save()
-                            navController.navigate(FoodList)
-                        }
-                    }, modifier = Modifier.fillMaxWidth()) {
-                        Icon(
-                            imageVector = Icons.Filled.Save,
-                            contentDescription = stringResource(R.string.food_create_update_content_desc_save),
-                            tint = MaterialTheme.colorScheme.onBackground,
-                            modifier = Modifier.padding(start = 25.dp, top = 3.dp)
-                                .size(32.dp)
-                        )
-                    }
-
                 }
 
             }
@@ -216,14 +200,35 @@ fun FoodCreateUpdateScreen(
                         localDateToDate(updateContent.resource.datePurchased) else null
                     viewModel.form.amount.state.value = updateContent.resource.amount.toString()
                     viewModel.form.comment.state.value = updateContent.resource.comment
-                    viewModel.form.category.state.value = updateContent.resource.category
-
+                    viewModel.form.category.state.value = updateContent.resource.category?.let { FoodGroup(it) }
 
                 }
                 else -> {}
             }
 
-            FormFieldsUi(viewModel, controller, viewState)
+            FormFieldsUi(viewModel, controller, viewState, appSettingsState)
+
+            IconButton(
+                onClick = {
+                    coroutineScope.launch {
+                        viewModel.save()
+                        navController.navigate(FoodList)
+                    }
+                },
+                modifier = Modifier.fillMaxWidth()
+                    .align(Alignment.CenterHorizontally)
+
+            )
+            {
+                Icon(
+                    imageVector = Icons.Filled.Save,
+                    contentDescription = stringResource(R.string.food_create_update_content_desc_save),
+                    tint = MaterialTheme.colorScheme.onBackground,
+                    modifier = Modifier.padding(start = 25.dp, top = 3.dp)
+                        .size(32.dp)
+                )
+            }
+
 
         }
     }
@@ -235,6 +240,7 @@ private fun FormFieldsUi(
     viewModel: FoodCreateUpdateViewModel,
     controller: LifecycleCameraController,
     viewState: State<FoodCreateUpdateViewModel.ViewState>,
+    appSettingsState: State<AppSettingsViewModel.AppSettingsUiState>
 ) {
 
     var recognizedDate by remember { mutableStateOf("") }
@@ -242,7 +248,7 @@ private fun FormFieldsUi(
     var foodPhoto by remember { mutableStateOf<Bitmap?>(null) }
 
 
-    Row(horizontalArrangement = Arrangement.Center) {
+    /*Row(horizontalArrangement = Arrangement.Center) {
 
         Box(
             modifier = Modifier
@@ -330,10 +336,63 @@ private fun FormFieldsUi(
                 }
             }
         }
+    }*/
+
+    // Entry name
+    TextField(
+        label = stringResource(R.string.common_food_name_label),
+        form = viewModel.form,
+        fieldState = viewModel.form.name
+    ).Field()
+
+    // Date de péremption (obligatoire)
+    Box() {
+        DateField(
+            label = stringResource(R.string.food_create_update_label_expiry_date),
+            form = viewModel.form,
+            fieldState = viewModel.form.expiryDate,
+            formatter = ::dateLong,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 16.dp)
+        ).Field()
+
+        IconButton(
+            onClick = { showCameraDialog = true },
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .padding(bottom = 8.dp)
+        ) {
+            Icon(
+                imageVector = Icons.Filled.PhotoCamera,
+                contentDescription = stringResource(R.string.food_create_update_content_desc_take_expiry_photo)
+            )
+        }
+
+        if (showCameraDialog) {
+            Dialog(
+                onDismissRequest = { showCameraDialog = false },
+                properties = DialogProperties(
+                    usePlatformDefaultWidth = false, decorFitsSystemWindows = false
+                )
+            ) {
+                CameraBox { image ->
+                    TextRecognitionHelper.recognizeTextFromImage(image) { date ->
+                        if (date != null) {
+                            recognizedDate = date
+                            viewModel.form.expiryDate.state.value =
+                                Converters.fromStringDateToDate(date)
+                            Log.i(TAG, "recognizedDate $recognizedDate")
+                        }
+                    }
+                    showCameraDialog = false
+                }
+            }
+        }
     }
 
 
-    // --- Date d'achat (optionnelle) ---
+        // --- Date d'achat (optionnelle) ---
     DateField(
         label = stringResource(R.string.food_create_update_label_purchase_date),
         form = viewModel.form,
@@ -356,7 +415,7 @@ private fun FormFieldsUi(
     ).Field()
 
 
-    // --- Marque (optionnelle) ---
+    // Marque (optionnelle)
     TextField(
         label = stringResource(R.string.food_create_update_label_brand),
         form = viewModel.form,
@@ -366,8 +425,23 @@ private fun FormFieldsUi(
             .padding(bottom = 16.dp)
     ).Field()
 
-    // --- Marque (optionnelle) ---
-    TextField(
+    /**
+     * Met à jour la liste de nom de catégorie possible selon le langage sélectionné.
+     * Cette mise à jour se fait ici et non pas dans FoodForms car les ressources xml
+     * sont accessible seulement à l'exécution
+     */
+    @Composable
+    fun translateCategoryFieldState(){
+        viewModel.form.category.options = stringArrayResource(R.array.food_category)
+                                        .map { string -> FoodGroup(string) }.toMutableList()
+
+        Log.d("FoodCreateUpdateScreen", "category option = ${viewModel.form.category.options}")
+    }
+
+    translateCategoryFieldState()
+
+    // Catégorie (optionnelle)
+    PickerField(
         label = stringResource(R.string.food_create_update_label_category),
         form = viewModel.form,
         fieldState = viewModel.form.category,
@@ -376,7 +450,8 @@ private fun FormFieldsUi(
             .padding(bottom = 16.dp)
     ).Field()
 
-    // --- Commentaire (optionnel) ---
+
+    // Commentaire (optionnel)
     TextField(
         label = stringResource(R.string.food_create_update_label_comment),
         form = viewModel.form,

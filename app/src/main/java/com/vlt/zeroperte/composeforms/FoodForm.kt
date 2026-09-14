@@ -1,4 +1,4 @@
-package com.vlt.zeroperte.ui
+package com.vlt.zeroperte.composeforms
 
 import androidx.compose.runtime.mutableStateOf
 import ch.benlu.composeform.FieldState
@@ -6,8 +6,17 @@ import ch.benlu.composeform.Form
 import ch.benlu.composeform.FormField
 import ch.benlu.composeform.validators.NotEmptyValidator
 import ch.benlu.composeform.Validator
+import ch.benlu.composeform.fields.PickerValue
 import java.util.Date
 
+
+data class FoodGroup(
+    val name: String
+): PickerValue() {
+    override fun searchFilter(query: String): Boolean {
+        return this.name.startsWith(query)
+    }
+}
 class FoodForm : Form() {
 
 
@@ -53,7 +62,37 @@ class FoodForm : Form() {
 
     @FormField
     val category = FieldState(
-        state = mutableStateOf<String?>(null)
+        state = mutableStateOf<FoodGroup?>(null),
+        options = mutableListOf(
+            FoodGroup("Fruits et légumes"),
+            FoodGroup("Féculents"),
+            FoodGroup("Légumineuses"),
+            FoodGroup("Produits laitiers"),
+            FoodGroup("Matière grasse"),
+            FoodGroup("Viande"),
+            FoodGroup("Poisson et fruits de mer"),
+            FoodGroup("Sucreries"),
+            FoodGroup("Boisson"),
+            FoodGroup("Eau")
+        ),
+        optionItemFormatter = { "${it?.name}" }
     )
 
+    @FormField
+    val categoryEn = FieldState(
+        state = mutableStateOf<FoodGroup?>(null),
+        options = mutableListOf(
+            FoodGroup("Fruits and vegetables"),
+            FoodGroup("Starchy food"),
+            FoodGroup("Legume"),
+            FoodGroup("Dairy"),
+            FoodGroup("Fats and oil"),
+            FoodGroup("Meat"),
+            FoodGroup("Fish and seafoods"),
+            FoodGroup("Sugary foods"),
+            FoodGroup("Drink"),
+            FoodGroup("Water")
+        ),
+        optionItemFormatter = { "${it?.name}" }
+    )
 }

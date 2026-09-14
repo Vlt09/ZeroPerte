@@ -1,12 +1,12 @@
 package com.vlt.zeroperte.ui.ViewModel
 
 import android.content.ContentValues.TAG
-import android.graphics.Bitmap
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.vlt.zeroperte.data.FoodRepository
 import com.vlt.zeroperte.data.model.FoodDto
-import com.vlt.zeroperte.ui.FoodForm
+import com.vlt.zeroperte.composeforms.FoodForm
+import com.vlt.zeroperte.composeforms.FoodGroup
 import com.vlt.zeroperte.utils.FoodMapper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -65,7 +65,7 @@ class FoodCreateUpdateViewModel @Inject constructor(
                 name = values["name"] as String,
                 expiryDate = dateToLocalDate(values["expiryDate"] as Date),
                 brand = values["brand"] as? String,
-                category = values["category"] as? String,
+                category = (values["category"] as? FoodGroup)?.name,
                 datePurchased = (values["datePurchased"] as? Date)?.let { dateToLocalDate(it) },
                 comment = values["comment"] as? String,
                 amount = (values["amount"] as? Int).let { 1 },

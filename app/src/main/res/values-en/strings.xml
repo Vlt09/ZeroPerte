@@ -58,6 +58,7 @@
     <string name="food_detail_content_desc_delete">Delete food item</string>
     <string name="food_detail_content_desc_photo">Food item photo</string>
     <string name="food_detail_label_purchase_date">Purchase date</string>
+    <string name="food_detail_category">Category</string>
     <string name="food_detail_placeholder_date">mm/dd/yyyy</string>
     <string name="food_detail_label_brand">Brand</string>
     <string name="food_detail_na">N/A</string>
@@ -83,4 +84,23 @@
     <string name="food_create_update_allow_camera_button">Allow camera</string>
     <string name="food_create_update_fab_take_photo">Take a photo of the expiry date</string>
     <string name="food_create_update_camera_capture_content_desc">Camera capture icon</string>
+
+    <!-- Category item translation from french (in the back category are always save in French) -->
+    <string name="Fruits et légumes"></string>
+    <string name="Féculents">Starchy food</string>
+
+    <!-- Category item list -->
+    <string-array name="food_category">
+        <item>Fruits and vegetables</item>
+        <item>Starchy food</item>
+        <item>Legume</item>
+        <item>Dairy</item>
+        <item>Fats and oil</item>
+        <item>Meat</item>
+        <item>Fish and seafoods</item>
+        <item>Sugary foods</item>
+        <item>Drink</item>
+        <item>Water</item>
+    </string-array>
+
 </resources>
