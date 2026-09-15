@@ -52,6 +52,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.SearchBarDefaults
@@ -85,6 +86,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import com.vlt.zeroperte.R
 import com.vlt.zeroperte.business.FoodStatusCalculator
+import com.vlt.zeroperte.data.model.FoodCategory
 import com.vlt.zeroperte.data.model.FoodDto
 import com.vlt.zeroperte.data.model.domain.FoodStatus
 import com.vlt.zeroperte.ui.FoodCreateUpdate
@@ -225,15 +227,15 @@ private fun FoodListLazyColumn(
                     modifier = Modifier.align(Alignment.End)
                 )
 
-
                 FoodSearchBar(
                     textFieldState = textFieldState,
                     selectedCriteria = selectedCriteria,
                     onCriteriaSelected = {
                         selectedCriteria = it
                         viewModel.toggleCriteria(selectedCriteria)
-                                         },
-                    onSearch = { result -> viewModel.triggerSearch(result) },
+                    },
+                    onSearch = { result, foodCategory -> viewModel.triggerSearch(result, foodCategory)
+                               },
                     modifier = Modifier.fillMaxWidth()
                 )
             }
@@ -556,11 +558,15 @@ fun FoodSearchBar(
     textFieldState: TextFieldState,
     selectedCriteria: SearchCriteria,
     onCriteriaSelected: (SearchCriteria) -> Unit,
-    onSearch: (String) -> Unit,
+    onSearch: (String, FoodCategory?) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var expanded by rememberSaveable { mutableStateOf(false) }
     var menuExpanded by remember { mutableStateOf(false) }
+    var categoryMenuExpanded by remember { mutableStateOf(false) }
+    var selectedCategory by remember { mutableStateOf<FoodCategory?>(null) }
+
+    val isCategoryMode = selectedCriteria == SearchCriteria.Category
 
     Box(
         modifier
@@ -573,32 +579,48 @@ fun FoodSearchBar(
                 .semantics { traversalIndex = 0f },
             inputField = {
                 SearchBarDefaults.InputField(
-                    query = textFieldState.text.toString(),
-                    onQueryChange = {
-                        textFieldState.edit { replace(0, length, it) }
-                        onSearch(textFieldState.text.toString())
-                                    },
-                    onSearch = {
-                        expanded = false
+                    query = if (isCategoryMode) {
+                        selectedCategory?.let { stringResource(it.labelId) } ?: ""
+                    } else {
+                        textFieldState.text.toString()
                     },
+                    onQueryChange = { newValue ->
+                        if (isCategoryMode) {
+                            categoryMenuExpanded = true
+                        } else {
+                            textFieldState.edit { replace(0, length, newValue) }
+                            onSearch(textFieldState.text.toString(), null)
+                        }
+                    },
+                    onSearch = { expanded = false },
                     expanded = false,
                     onExpandedChange = { expanded = false },
+                    enabled = !isCategoryMode,
                     placeholder = {
-                        if (selectedCriteria == SearchCriteria.NoSelected){
+                        if (selectedCriteria == SearchCriteria.NoSelected) {
                             Text(selectedCriteria.displayLabel())
-                        }
-                        else{
+                        } else {
                             Text(stringResource(R.string.food_list_search_by, selectedCriteria.displayLabel()))
                         }
-                      },
+                    },
+                    modifier = if (isCategoryMode) {
+                        Modifier.clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null
+                        ) { categoryMenuExpanded = true }
+                    } else {
+                        Modifier
+                    },
                     trailingIcon = {
-                        Box() {
+                        Box {
                             IconButton(
                                 modifier = Modifier.padding(end = 30.dp),
                                 onClick = {
-                                    textFieldState.edit { replace(0, length, "")}
+                                    textFieldState.edit { replace(0, length, "") }
+                                    selectedCategory = null
                                     onCriteriaSelected(SearchCriteria.NoSelected)
-                                }) {
+                                }
+                            ) {
                                 Icon(
                                     imageVector = Icons.Filled.Close,
                                     contentDescription = stringResource(R.string.food_list_content_desc_choose_criteria)
@@ -619,15 +641,32 @@ fun FoodSearchBar(
                                 expanded = menuExpanded,
                                 onDismissRequest = { menuExpanded = false }
                             ) {
-                                SearchCriteria.entries.filter { c -> c != SearchCriteria.NoSelected }
+                                SearchCriteria.entries.filter { it != SearchCriteria.NoSelected }
                                     .forEach { criteria ->
                                         DropdownMenuItem(
                                             text = { Text(criteria.displayLabel()) },
                                             onClick = {
+                                                selectedCategory = null
                                                 onCriteriaSelected(criteria)
                                                 menuExpanded = false
                                             }
                                         )
+                                    }
+                            }
+
+                            DropdownMenu(
+                                expanded = categoryMenuExpanded,
+                                onDismissRequest = { categoryMenuExpanded = false }
+                            ) {
+                                FoodCategory.entries.forEach { category ->
+                                    DropdownMenuItem(
+                                        text = { Text(stringResource(category.labelId)) },
+                                        onClick = {
+                                            selectedCategory = category
+                                            onSearch(category.name, category)
+                                            categoryMenuExpanded = false
+                                        }
+                                    )
                                 }
                             }
                         }

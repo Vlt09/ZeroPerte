@@ -200,7 +200,7 @@ fun FoodCreateUpdateScreen(
                         localDateToDate(updateContent.resource.datePurchased) else null
                     viewModel.form.amount.state.value = updateContent.resource.amount.toString()
                     viewModel.form.comment.state.value = updateContent.resource.comment
-                    viewModel.form.category.state.value = updateContent.resource.category?.let { FoodGroup(it) }
+                    viewModel.form.category.state.value = updateContent.resource.category?.let { FoodGroup(it, stringResource(it.labelId)) }
 
                 }
                 else -> {}
@@ -432,8 +432,10 @@ private fun FormFieldsUi(
      */
     @Composable
     fun translateCategoryFieldState(){
-        viewModel.form.category.options = stringArrayResource(R.array.food_category)
-                                        .map { string -> FoodGroup(string) }.toMutableList()
+        viewModel.form.category.options = viewModel.form.category.options
+            .map {foodGroup -> foodGroup?.let { FoodGroup(it.category,
+                                stringResource(foodGroup.category.labelId)) } }
+            .toMutableList()
 
         Log.d("FoodCreateUpdateScreen", "category option = ${viewModel.form.category.options}")
     }

@@ -85,6 +85,18 @@
     <string name="food_create_update_fab_take_photo">Prendre en photo la date de péremption</string>
     <string name="food_create_update_camera_capture_content_desc">Icône de capture caméra</string>
 
+    <!-- Food category -->
+    <string name="food_category_fruit_vegetable">Fruits et légumes</string>
+    <string name="food_category_starchy">Féculents</string>
+    <string name="food_category_legume">Légumineuses</string>
+    <string name="food_category_dairy">Produits laitiers</string>
+    <string name="food_category_fat_oil">Matière grasse</string>
+    <string name="food_category_meat">Viande</string>
+    <string name="food_category_fish_seafood">Poisson et fruits de mer</string>
+    <string name="food_category_sugary">Sucreries</string>
+    <string name="food_category_drink">Boisson</string>
+    <string name="food_category_water">Eau</string>
+
     <!-- Category item list -->
     <string-array name="food_category">
         <item>Fruits et légumes</item>

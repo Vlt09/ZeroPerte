@@ -43,6 +43,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import com.vlt.zeroperte.R
 import com.vlt.zeroperte.business.FoodStatusCalculator
+import com.vlt.zeroperte.data.model.FoodCategory
 import com.vlt.zeroperte.ui.FoodCreateUpdate
 import com.vlt.zeroperte.ui.FoodList
 import com.vlt.zeroperte.ui.ViewModel.AppSettingsViewModel
@@ -56,7 +57,7 @@ import java.time.temporal.ChronoUnit
 
 data class FoodDetailItem(
     val name: String,
-    val category: String?,
+    val category: FoodCategory?,
     val brand: String?,
     val purchaseDate: LocalDate?,
     val expiryDate: LocalDate,
@@ -251,7 +252,7 @@ private fun FoodDetailUI(
 
             ReadOnlyDetailField(
                 label = stringResource(R.string.food_detail_category),
-                value = foodDetail.category ?: stringResource(R.string.food_detail_na)
+                value = foodDetail.category?.let { stringResource(it.labelId) } ?: stringResource(R.string.food_detail_na)
             )
 
             ReadOnlyDetailField(

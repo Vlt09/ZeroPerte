@@ -5,6 +5,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vlt.zeroperte.data.FoodRepository
+import com.vlt.zeroperte.data.model.FoodCategory
 import com.vlt.zeroperte.data.model.FoodDto
 import com.vlt.zeroperte.data.model.FoodListViewModelDto
 import com.vlt.zeroperte.data.model.domain.FoodStatus
@@ -28,6 +29,8 @@ import javax.inject.Inject
 @HiltViewModel
 class FoodListViewModel @Inject constructor(private val repository: FoodRepository): ViewModel() {
 
+    typealias Predicate3<T1, T2, T3> = (T1, T2, T3) -> Boolean
+
     sealed interface FoodListUiState{
         data class Empty(val filter: FilterState) : FoodListUiState
 
@@ -44,8 +47,9 @@ class FoodListViewModel @Inject constructor(private val repository: FoodReposito
 
     data class SearchCriteriaState(
         val criteriaList: List<SearchCriteria>,
-        val applyCriteria: Predicate<FoodListViewModelDto>,
-        val searchInput: String?
+        val applyCriteria: Predicate3<FoodListViewModelDto, String?, FoodCategory?>,
+        val searchInput: String?,
+        val foodCategory: FoodCategory?
     )
 
 
@@ -68,8 +72,9 @@ class FoodListViewModel @Inject constructor(private val repository: FoodReposito
     private val _searchBarUiState = MutableStateFlow(
         SearchCriteriaState(
             criteriaList = SearchCriteria.allCriteria,
-            applyCriteria = {f -> true},
-            searchInput = null
+            applyCriteria = {f, s, c -> true},
+            searchInput = null,
+            foodCategory = null
         )
     )
 
@@ -82,14 +87,19 @@ class FoodListViewModel @Inject constructor(private val repository: FoodReposito
             _searchBarUiState
         ){
             foods, filter, searchBar ->
-            Log.d(TAG, "combine triggered, foods.size=${foods.size}")
-            Log.d(TAG, "searchBar.applyCriteria is ${searchBar.applyCriteria}")
+            Log.d(TAG, "combine triggered, foods.size=${foods.size} food ${foods[0]}")
+
             if (foods.isEmpty()){
                 FoodListUiState.Empty(filter)
             }
             else{
                     val filteringFoods = foods.filter { f -> filter.applyFilter.test(f) &&
-                                                         searchBar.applyCriteria.test(f) }
+                                                             searchBar.applyCriteria.invoke(
+                                                                 f,
+                                                                 searchBar.searchInput,
+                                                                 searchBar.foodCategory
+                                                             )
+                                                        }
                         .toList()
 
                 FoodListUiState.Content(filteringFoods, filter)
@@ -107,7 +117,7 @@ class FoodListViewModel @Inject constructor(private val repository: FoodReposito
     fun toggleStatus(status: FoodStatus){
         _filterUiState.update {
                 var newStatus = it.selectedStatus
-                var newFilter = it.applyFilter
+                var newFilter: Predicate<FoodListViewModelDto>
 
                 // Filter selected twice is cancelled
                 if (newStatus == status){
@@ -128,19 +138,15 @@ class FoodListViewModel @Inject constructor(private val repository: FoodReposito
 
 
     fun toggleCriteria(searchCriteria: SearchCriteria){
+        Log.i("FoodListVM", "toggle criteria $searchCriteria")
         _searchBarUiState.update {
-            val newCriteria =
-                if(it.searchInput == null){
-                    Predicate<FoodListViewModelDto>{f -> true} // can't filter if the input is null
-                }
-                else {
-                    Predicate<FoodListViewModelDto>{f ->
-                        when(searchCriteria){
-                            SearchCriteria.Name -> f.name == it.searchInput
-                            SearchCriteria.Brand -> f.brand == it.searchInput
-                            SearchCriteria.Category -> f.category == it.searchInput
-                            SearchCriteria.NoSelected -> true
-                        }
+            val newCriteria: Predicate3<FoodListViewModelDto, String?, FoodCategory?> =
+                {dto, searchInput, foodCategory ->
+                    when(searchCriteria){
+                        SearchCriteria.Name -> dto.name == searchInput
+                        SearchCriteria.Brand -> dto.brand == searchInput
+                        SearchCriteria.Category -> dto.category == foodCategory
+                        SearchCriteria.NoSelected -> true
                     }
                 }
 
@@ -150,11 +156,13 @@ class FoodListViewModel @Inject constructor(private val repository: FoodReposito
         }
     }
 
-    fun triggerSearch(result: String){
-        Log.i("FoodLisViewModel", "inputSearch = $result")
+
+    fun triggerSearch(result: String, foodCategory: FoodCategory?){
+        Log.i("FoodLisViewModel", "inputSearch = $result category $foodCategory")
         _searchBarUiState.update {
             return@update it.copy(
                 searchInput = result,
+                foodCategory = foodCategory
             )
         }
     }

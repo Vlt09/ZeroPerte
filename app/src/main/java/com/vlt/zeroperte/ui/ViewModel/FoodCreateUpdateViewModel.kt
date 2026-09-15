@@ -65,7 +65,7 @@ class FoodCreateUpdateViewModel @Inject constructor(
                 name = values["name"] as String,
                 expiryDate = dateToLocalDate(values["expiryDate"] as Date),
                 brand = values["brand"] as? String,
-                category = (values["category"] as? FoodGroup)?.name,
+                category = (values["category"] as? FoodGroup)?.category,
                 datePurchased = (values["datePurchased"] as? Date)?.let { dateToLocalDate(it) },
                 comment = values["comment"] as? String,
                 amount = (values["amount"] as? Int).let { 1 },

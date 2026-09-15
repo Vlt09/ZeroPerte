@@ -1,16 +1,20 @@
 package com.vlt.zeroperte.composeforms
 
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.res.stringResource
 import ch.benlu.composeform.FieldState
 import ch.benlu.composeform.Form
 import ch.benlu.composeform.FormField
 import ch.benlu.composeform.validators.NotEmptyValidator
 import ch.benlu.composeform.Validator
 import ch.benlu.composeform.fields.PickerValue
+import com.vlt.zeroperte.data.model.FoodCategory
 import java.util.Date
 
 
 data class FoodGroup(
+    val category: FoodCategory,
     val name: String
 ): PickerValue() {
     override fun searchFilter(query: String): Boolean {
@@ -64,34 +68,16 @@ class FoodForm : Form() {
     val category = FieldState(
         state = mutableStateOf<FoodGroup?>(null),
         options = mutableListOf(
-            FoodGroup("Fruits et légumes"),
-            FoodGroup("Féculents"),
-            FoodGroup("Légumineuses"),
-            FoodGroup("Produits laitiers"),
-            FoodGroup("Matière grasse"),
-            FoodGroup("Viande"),
-            FoodGroup("Poisson et fruits de mer"),
-            FoodGroup("Sucreries"),
-            FoodGroup("Boisson"),
-            FoodGroup("Eau")
-        ),
-        optionItemFormatter = { "${it?.name}" }
-    )
-
-    @FormField
-    val categoryEn = FieldState(
-        state = mutableStateOf<FoodGroup?>(null),
-        options = mutableListOf(
-            FoodGroup("Fruits and vegetables"),
-            FoodGroup("Starchy food"),
-            FoodGroup("Legume"),
-            FoodGroup("Dairy"),
-            FoodGroup("Fats and oil"),
-            FoodGroup("Meat"),
-            FoodGroup("Fish and seafoods"),
-            FoodGroup("Sugary foods"),
-            FoodGroup("Drink"),
-            FoodGroup("Water")
+            FoodGroup(FoodCategory.FRUIT_VEGETABLE, "Fruits et légumes"),
+            FoodGroup(FoodCategory.STARCHY, "Féculents"),
+            FoodGroup(FoodCategory.LEGUME, "Légumineuses"),
+            FoodGroup(FoodCategory.DAIRY, "Produits laitiers"),
+            FoodGroup(FoodCategory.FAT_OIL, "Matière grasse"),
+            FoodGroup(FoodCategory.MEAT, "Viande"),
+            FoodGroup(FoodCategory.FISH_SEAFOOD, "Poisson et fruits de mer"),
+            FoodGroup(FoodCategory.SUGARY, "Sucreries"),
+            FoodGroup(FoodCategory.DRINK, "Boisson"),
+            FoodGroup(FoodCategory.DRINK, "Eau")
         ),
         optionItemFormatter = { "${it?.name}" }
     )

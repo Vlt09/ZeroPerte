@@ -85,9 +85,18 @@
     <string name="food_create_update_fab_take_photo">Take a photo of the expiry date</string>
     <string name="food_create_update_camera_capture_content_desc">Camera capture icon</string>
 
-    <!-- Category item translation from french (in the back category are always save in French) -->
-    <string name="Fruits et légumes"></string>
-    <string name="Féculents">Starchy food</string>
+    <!-- Food category -->
+    <string name="food_category_fruit_vegetable">Fruits and vegetables</string>
+    <string name="food_category_starchy">Starchy food</string>
+    <string name="food_category_legume">Legume</string>
+    <string name="food_category_dairy">Dairy</string>
+    <string name="food_category_fat_oil">Fat and oil</string>
+    <string name="food_category_meat">Meat</string>
+    <string name="food_category_fish_seafood">Fish and seafood</string>
+    <string name="food_category_sugary">Sugary food</string>
+    <string name="food_category_drink">Drink</string>
+    <string name="food_category_water">Water</string>
+
 
     <!-- Category item list -->
     <string-array name="food_category">
