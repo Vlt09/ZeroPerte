@@ -7,6 +7,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -38,11 +39,16 @@ import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Cookie
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Eco
 import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.Grain
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Icecream
 import androidx.compose.material.icons.filled.NoFood
 import androidx.compose.material.icons.filled.Photo
+import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.DropdownMenu
@@ -71,6 +77,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.traversalIndex
@@ -109,8 +116,21 @@ data class FoodCardItem(
     val name: String = "Name",
     val remainingDay: Long = 0,
     val expiryDate: LocalDate,
-    val photo: ImageVector?,
+    val iconId: Int?,
     val dtoRef: FoodDto
+)
+
+val categoryIcons: Map<FoodCategory, Int> = mapOf(
+    FoodCategory.FRUIT_VEGETABLE to R.drawable.nourriture_saine,
+    FoodCategory.STARCHY to R.drawable.ble,
+    FoodCategory.LEGUME to R.drawable.legumineuses,
+    FoodCategory.DAIRY to R.drawable.les_produits_laitiers,
+    FoodCategory.FAT_OIL to R.drawable.beurre,
+    FoodCategory.MEAT to R.drawable.viande,
+    FoodCategory.FISH_SEAFOOD to R.drawable.poisson,
+    FoodCategory.SUGARY to R.drawable.biscuits,
+    FoodCategory.DRINK to R.drawable.boisson_non_alcoolisee,
+    FoodCategory.WATER to R.drawable.bouteille_deau
 )
 
 enum class SearchCriteria {
@@ -255,7 +275,7 @@ private fun FoodListLazyColumn(
                 name = foodVmDto.name,
                 remainingDay = remainingDay,
                 expiryDate = foodVmDto.expiryDate,
-                photo = null,
+                iconId = categoryIcons[foodVmDto.category],
                 dtoRef = FoodMapper.toFoodDto(foodVmDto)
             )
 
@@ -393,6 +413,8 @@ internal fun FoodCard(
         else -> extendedColors.validCard
     }
 
+    val iconRes = foodCardItem.iconId ?: R.drawable.photo_camera_24
+
     Card(
         colors = CardDefaults.cardColors(
             containerColor = cardColor.color,
@@ -409,10 +431,9 @@ internal fun FoodCard(
                 .padding(10.dp)
         ) {
 
-            Icon(
-                imageVector = Icons.Filled.Photo,
+            Image(
+                painter = painterResource(id = iconRes),
                 contentDescription = stringResource(R.string.food_list_photo_content_desc),
-                tint = extendedColors.expiredCard.onColor,
                 modifier = Modifier.size(90.dp)
             )
 

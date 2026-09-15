@@ -66,7 +66,7 @@ class FoodForm : Form() {
 
     @FormField
     val category = FieldState(
-        state = mutableStateOf<FoodGroup?>(null),
+        state = mutableStateOf(null),
         options = mutableListOf(
             FoodGroup(FoodCategory.FRUIT_VEGETABLE, "Fruits et légumes"),
             FoodGroup(FoodCategory.STARCHY, "Féculents"),
@@ -77,7 +77,7 @@ class FoodForm : Form() {
             FoodGroup(FoodCategory.FISH_SEAFOOD, "Poisson et fruits de mer"),
             FoodGroup(FoodCategory.SUGARY, "Sucreries"),
             FoodGroup(FoodCategory.DRINK, "Boisson"),
-            FoodGroup(FoodCategory.DRINK, "Eau")
+            FoodGroup(FoodCategory.WATER, "Eau")
         ),
         optionItemFormatter = { "${it?.name}" }
     )
