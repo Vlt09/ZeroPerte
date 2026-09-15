@@ -222,7 +222,7 @@ private fun FoodDetailUI(
                     modifier = Modifier
                         .aspectRatio(2.3f)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(statusColor.color),
+                        .background(statusColor.colorContainer),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
@@ -232,7 +232,7 @@ private fun FoodDetailUI(
                             stringResource(R.string.common_expires_in_days, foodDetail.remainingDays)
                         },
                         style = MaterialTheme.typography.titleLarge,
-                        color = statusColor.onColor,
+                        color = statusColor.onColorContainer,
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(12.dp)
                     )

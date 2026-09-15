@@ -417,7 +417,7 @@ internal fun FoodCard(
 
     Card(
         colors = CardDefaults.cardColors(
-            containerColor = cardColor.color,
+            containerColor = cardColor.colorContainer,
         ),
         modifier = modifier
             .padding(8.dp)
@@ -443,7 +443,7 @@ internal fun FoodCard(
                     text = foodCardItem.name,
                     autoSize = TextAutoSize.StepBased(maxFontSize = 20.sp),
                     style = MaterialTheme.typography.headlineMedium,
-                    color = {cardColor.expiredSoonCardTypoDark1},
+                    color = {cardColor.onColorContainer},
                     modifier = Modifier
                                     .padding(top = 2.dp)
                 )
@@ -459,7 +459,7 @@ internal fun FoodCard(
                         text = stringResource(R.string.common_expires_in_days, foodCardItem.remainingDay),
                         autoSize = TextAutoSize.StepBased(maxFontSize = 20.sp),
                         style = MaterialTheme.typography.headlineMedium,
-                        color = {cardColor.expiredSoonCardTypoDark1},
+                        color = {cardColor.onColorContainer},
                     )
 
                     Column(
@@ -471,7 +471,7 @@ internal fun FoodCard(
                             text = stringResource(R.string.food_list_date_expiry, foodCardItem.expiryDate.toString()),
                             autoSize = TextAutoSize.StepBased(maxFontSize = 12.sp),
                             style = MaterialTheme.typography.headlineSmall,
-                            color = {cardColor.expiredSoonCardTypoDark1},
+                            color = {cardColor.onColorContainer},
                         )
                     }
                 }
