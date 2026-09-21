@@ -2,6 +2,7 @@ package com.vlt.zeroperte.utils
 
 import com.vlt.zeroperte.business.FoodStatusCalculator
 import com.vlt.zeroperte.data.model.Food
+import com.vlt.zeroperte.data.model.FoodCategory
 import com.vlt.zeroperte.data.model.FoodDto
 import com.vlt.zeroperte.data.model.domain.FoodStatus
 import org.junit.Assert.assertEquals
@@ -13,7 +14,7 @@ class FoodMapperTest {
     private fun sampleFoodDto(
         name: String = "Yaourt",
         brand: String? = "Danone",
-        category: String? = "frais",
+        category: FoodCategory? = FoodCategory.DAIRY,
         amount: Int? = 4,
         datePurchased: LocalDate? = LocalDate.now().minusDays(2),
         expiryDate: LocalDate = LocalDate.now().plusDays(30),
@@ -34,7 +35,7 @@ class FoodMapperTest {
         id: Long = 42L,
         name: String = "Yaourt",
         brand: String? = "Danone",
-        category: String? = "frais",
+        category: FoodCategory? = FoodCategory.DAIRY,
         amount: Int? = 4,
         datePurchased: LocalDate? = LocalDate.now().minusDays(2),
         expiryDate: LocalDate = LocalDate.now().plusDays(30),

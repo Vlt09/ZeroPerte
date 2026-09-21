@@ -5,6 +5,7 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.vlt.zeroperte.data.model.Food
+import com.vlt.zeroperte.data.model.FoodCategory
 import com.vlt.zeroperte.data.model.FoodDao
 import com.vlt.zeroperte.data.source.AppDatabase
 import kotlinx.coroutines.flow.first
@@ -42,7 +43,7 @@ class FoodDaoTest {
     private fun sampleFood(
         name: String = "Yaourt nature",
         brand: String? = "Danone",
-        category: String = "frais",
+        category: FoodCategory = FoodCategory.DAIRY,
         amount: Int = 4,
         datePurchased: LocalDate = LocalDate.now().minusDays(2),
         expiryDate: LocalDate = LocalDate.now().plusDays(5),

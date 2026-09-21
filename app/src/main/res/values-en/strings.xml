@@ -96,6 +96,7 @@
     <string name="food_category_sugary">Sugary food</string>
     <string name="food_category_drink">Drink</string>
     <string name="food_category_water">Water</string>
+    <string name="food_category_can">Can</string>
 
 
     <!-- Category item list -->

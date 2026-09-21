@@ -130,7 +130,8 @@ val categoryIcons: Map<FoodCategory, Int> = mapOf(
     FoodCategory.FISH_SEAFOOD to R.drawable.poisson,
     FoodCategory.SUGARY to R.drawable.biscuits,
     FoodCategory.DRINK to R.drawable.boisson_non_alcoolisee,
-    FoodCategory.WATER to R.drawable.bouteille_deau
+    FoodCategory.WATER to R.drawable.bouteille_deau,
+    FoodCategory.CAN to R.drawable.nourriture_en_boite
 )
 
 enum class SearchCriteria {

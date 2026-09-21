@@ -2,6 +2,7 @@ package com.vlt.zeroperte.ui
 
 import com.vlt.zeroperte.data.FakeFoodRepository
 import com.vlt.zeroperte.data.model.Food
+import com.vlt.zeroperte.data.model.FoodCategory
 import com.vlt.zeroperte.data.model.domain.FoodStatus
 import com.vlt.zeroperte.ui.ViewModel.FoodListViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -34,7 +35,7 @@ class FoodListViewModelTest {
     private fun sampleFood(
         name: String = "Yaourt",
         brand: String? = "Danone",
-        category: String = "frais",
+        category: FoodCategory = FoodCategory.DAIRY,
         amount: Int = 4,
         datePurchased: LocalDate = LocalDate.now().minusDays(2),
         expiryDate: LocalDate = LocalDate.now().plusDays(30),

@@ -96,6 +96,7 @@
     <string name="food_category_sugary">Sucreries</string>
     <string name="food_category_drink">Boisson</string>
     <string name="food_category_water">Eau</string>
+    <string name="food_category_can">Conserve</string>
 
     <!-- Category item list -->
     <string-array name="food_category">

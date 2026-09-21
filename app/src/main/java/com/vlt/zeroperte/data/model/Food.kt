@@ -17,7 +17,9 @@ enum class FoodCategory(@StringRes val labelId: Int){
     FISH_SEAFOOD(R.string.food_category_fish_seafood),
     SUGARY(R.string.food_category_sugary),
     DRINK(R.string.food_category_drink),
-    WATER(R.string.food_category_water)
+    WATER(R.string.food_category_water),
+
+    CAN(R.string.food_category_can)
 
 }
 
