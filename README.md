@@ -1,100 +1,120 @@
-# 🥫 ZeroPerte
+<p align="center">
+  <img src="docs/images/logo.png" alt="Padegachi logo" width="140">
+</p>
 
-**ZeroPerte** is a native Android app that helps reduce food waste by tracking expiry dates of food stored at home, and alerting the user before expiration.
+<h1 align="center">Padegachi</h1>
 
-> 100% local app — no data ever leaves the device.
+<p align="center">
+  Keep track of what's in your kitchen, and get a nudge before it goes off.
+</p>
 
-![App preview](preview.gif)
+---
 
-## ✨ Features
+Padegachi is a native Android app I'm building to cut down on food waste at home. You add what you buy, along with its expiry date, and the app tells you when something is about to expire. The idea came from a very ordinary annoyance: tidying the cupboard and finding cans that went out of date months ago.
 
-### Food management
-- Add, edit, delete food items
-- Capture expiry date via photo (OCR)
-- Associated info: name, brand, purchase date, expiry date, category, quantity, free comment
+Everything stays on your phone. There is no account, no server and no tracking, so nothing you enter ever leaves the device.
 
-### Alerts & notifications
-- Configurable reminder X days before expiration
-- Notification on the expiration day
-- Works even when the app is closed
-- Can be toggled globally or per item
+<p align="center">
+  <img src="docs/images/preview.gif" alt="Padegachi in use" width="280">
+</p>
 
-### Visualization & search
-- Visual indication of status (expired / expiring soon / OK)
-- Sort by expiry date, category, alphabetical order
+## A quick look
 
-### Stock management & history
-- Decrement quantity, duplicate an item with a new date
-- History of deleted items, with restore option
-- Statistics (total count, expired, expiring soon, breakdown by category)
+<p align="center">
+  <img src="docs/images/home.png" alt="Home screen" width="200">
+  <img src="docs/images/food-list.png" alt="Food list" width="200">
+  <img src="docs/images/food-detail.png" alt="Food detail" width="200">
+</p>
+<p align="center">
+  <img src="docs/images/add-food.png" alt="Adding a food item" width="200">
+  <img src="docs/images/scan-date.png" alt="Scanning an expiry date" width="200">
+  <img src="docs/images/settings.png" alt="Settings" width="200">
+</p>
 
-## 🛠️ Tech stack
+## What it does today
 
-| Area | Tech |
+**Keeping track of your food**
+- Add, edit and delete items, with a name, brand, category, quantity, purchase date, expiry date and a free comment.
+- Point the camera at the printed date and let the app read it for you (on-device text recognition), instead of typing it in.
+- Each category has its own illustration, so the list is easy to scan.
+
+**Seeing what needs attention**
+- Every item is colour-coded: expired, expiring soon, or fine.
+- Filter the list by status, and search by name, brand or category.
+
+**Being reminded**
+- A notification warns you a few days before something expires. You choose how many days in the settings, and you can switch reminders off entirely.
+- Reminders still arrive when the app is closed.
+
+**Making it yours**
+- Light and dark themes.
+- Available in French and English.
+- A settings screen where you can wipe all your data in one step.
+
+## What's not there yet
+
+I'd rather be upfront about it. These are planned but not built:
+
+- Statistics (how much you've wasted, breakdown by category)
+- History of deleted items, with the option to restore them
+- Stock handling: decrementing a quantity, duplicating an item with a new date
+- More sorting options (by category, alphabetical)
+- Recipe suggestions
+
+## How it's built
+
+I use this project to practise modern Android development, so I've tried to keep the structure clean and conventional rather than clever.
+
+| Area | What I used |
 | --- | --- |
 | Language | Kotlin 2.2.20 |
 | UI | Jetpack Compose, Material 3 |
 | Dependency injection | Hilt |
-| Persistence | Room |
-| Architecture | MVVM, Repository pattern |
-| Navigation | Navigation Compose (type-safe `@Serializable` routes) |
-| Photo capture / OCR | CameraX + ML Kit Text Recognition |
+| Storage | Room |
+| Architecture | MVVM with the Repository pattern |
+| Navigation | Navigation Compose, type-safe `@Serializable` routes |
+| Camera and OCR | CameraX and ML Kit Text Recognition |
+| Reminders | WorkManager |
 | Forms | compose-form |
-| Async | Kotlin Coroutines, StateFlow |
-| Tests | JUnit, Room in-memory, Turbine |
+| Async | Kotlin Coroutines and StateFlow |
+| Tests | JUnit, in-memory Room, Turbine |
 | Build | AGP 8.13.2, KSP |
 
-**minSdk: 26 (Android 8.0)**
+Minimum supported version is Android 8.0 (API 26).
 
-## 🏗️ Architecture
+### Architecture in short
 
-Single-Activity app, layered architecture:
+It's a single-activity app with a simple flow of data:
 
 ```
-UI (Compose)  →  ViewModel (StateFlow)  →  Repository  →  Room (DAO / Entities)
+Compose UI  ->  ViewModel (StateFlow)  ->  Repository  ->  Room (DAO / entities)
 ```
 
-- **Data layer**: Room entities, DAOs, TypeConverters, Repository pattern (`FoodRepository` / `DefaultFoodRepository`)
-- **DI**: Hilt (`@HiltAndroidApp`, modules, `@Binds`, `@Singleton`)
-- **ViewModel**: state exposed via `StateFlow` and sealed interfaces (`Loading` / `Empty` / `Content`), reactive filters combined with `combine()`
-- **Navigation**: type-safe `@Serializable` routes, shared add/edit screen
-- **Business logic**: dedicated `FoodStatusCalculator` for expiry status computation
+- The **data layer** holds the Room entities, DAOs, type converters and a `FoodRepository` with its default implementation.
+- **Hilt** wires everything together, including the background worker that sends reminders.
+- Each **ViewModel** exposes its screen state as a sealed interface (loading, empty, content). The food list combines several flows, so changing a filter or a search term recomputes the list on its own.
+- **Navigation** uses typed routes, and adding and editing share the same screen.
+- The expiry status of an item comes from one dedicated class, `FoodStatusCalculator`, so the rule lives in a single place.
 
-## 🎨 Design
+### Design
 
-- Material 3 with a custom theme generated via Material Theme Builder
-- Blue-teal primary color (`#1F6E6E`), chosen to avoid clashing with status colors (red/orange/green)
-- Extended color scheme (`ExtendedColorScheme`) exposed via `CompositionLocal` for status colors (expired, expiring soon...)
-- Dates formatted as `dd/MM/yyyy`, handled with `java.time.LocalDate`
+The theme was generated with Material Theme Builder around a blue-teal primary colour (`#1F6E6E`). I chose it deliberately so it wouldn't compete with the red, orange and green used for expiry status. Those status colours live in an extended colour scheme exposed through a `CompositionLocal`, with separate light and dark variants.
 
-## 🚧 Project status
+## Running it yourself
 
-Personal project in active development, used as a learning ground for modern Android/Kotlin development practices.
-
-**Already in place:** data layer, DI, ViewModel + UI for the food list, type-safe navigation, OCR capture, basic unit tests.
-
-**Coming up:**
-- Settings screen
-- Notifications (WorkManager)
-- Sorting list by expiry date, category, alphabetical order
-- Searching food by name
-- Statistics and history
-
-## 📦 Requirements
-
-- Android Studio (latest stable)
-- JDK 17+
-- Android SDK with API 26 minimum
-
-## 🚀 Installation
+You'll need Android Studio (recent stable), JDK 17 or newer, and the Android SDK with API 26 or higher.
 
 ```bash
 git clone <repo-url>
-cd zeroperte
+cd padegachi
 ```
 
-Open the project in Android Studio and let Gradle sync the dependencies.
+Open the folder in Android Studio, let Gradle sync, and run the `app` configuration on a device or emulator. A physical device is better if you want to try the camera scan.
 
-## 📄 License
+## Where the project stands
 
-This project is licensed under the [GNU General Public License v3.0](LICENSE).
+Padegachi is a personal project and still moving. The core is in place: storing food, the list with filters and search, the detail and edit screens, date scanning, reminders and settings. What's left is mostly the extras listed above.
+
+## License
+
+Released under the [GNU General Public License v3.0](LICENSE).
