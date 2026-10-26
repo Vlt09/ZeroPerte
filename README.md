@@ -1,12 +1,12 @@
 <p align="center">
-  <img src="docs/images/logo.png" alt="Padegachi logo" width="140">
+  <img src="docs/images/logo.png" alt="Padgachi logo" width="140">
 </p>
 
-<h1 align="center">Padegachi</h1>
+<h1 align="center">Padgachi</h1>
 
 ---
 
-Padegachi is a native Android app I'm building to cut down on food waste at home. You add what you buy, along with its expiry date, and the app tells you when something is about to expire. The idea came from a very ordinary annoyance: tidying the cupboard and finding cans that went out of date months ago.
+Padgachi is a native Android app I'm building to cut down on food waste at home. You add what you buy, along with its expiry date, and the app tells you when something is about to expire. The idea came from a very ordinary annoyance: tidying the cupboard and finding cans that went out of date months ago.
 
 Everything stays on your phone. There is no account, no server and no tracking, so nothing you enter ever leaves the device.
 
@@ -97,14 +97,14 @@ You'll need Android Studio (recent stable), JDK 17 or newer, and the Android SDK
 
 ```bash
 git clone <repo-url>
-cd padegachi
+cd Padgachi
 ```
 
 Open the folder in Android Studio, let Gradle sync, and run the `app` configuration on a device or emulator. A physical device is better if you want to try the camera scan.
 
 ## Where the project stands
 
-Padegachi is a personal project and still moving. The core is in place: storing food, the list with filters and search, the detail and edit screens, date scanning, reminders and settings. What's left is mostly the extras listed above.
+Padgachi is a personal project and still moving. The core is in place: storing food, the list with filters and search, the detail and edit screens, date scanning, reminders and settings. What's left is mostly the extras listed above.
 
 ## License
 
