@@ -4,31 +4,22 @@
 
 <h1 align="center">Padegachi</h1>
 
-<p align="center">
-  Keep track of what's in your kitchen, and get a nudge before it goes off.
-</p>
-
 ---
 
 Padegachi is a native Android app I'm building to cut down on food waste at home. You add what you buy, along with its expiry date, and the app tells you when something is about to expire. The idea came from a very ordinary annoyance: tidying the cupboard and finding cans that went out of date months ago.
 
 Everything stays on your phone. There is no account, no server and no tracking, so nothing you enter ever leaves the device.
 
-<p align="center">
-  <img src="docs/images/preview.gif" alt="Padegachi in use" width="280">
-</p>
-
 ## A quick look
 
 <p align="center">
-  <img src="docs/images/home.png" alt="Home screen" width="200">
-  <img src="docs/images/food-list.png" alt="Food list" width="200">
-  <img src="docs/images/food-detail.png" alt="Food detail" width="200">
+  <img src="docs/images/home.jpg" alt="Home screen" width="200">
+  <img src="docs/images/food-list.jpg" alt="Food list" width="200">
+  <img src="docs/images/food-detail.jpg" alt="Food detail" width="200">
 </p>
 <p align="center">
-  <img src="docs/images/add-food.png" alt="Adding a food item" width="200">
-  <img src="docs/images/scan-date.png" alt="Scanning an expiry date" width="200">
-  <img src="docs/images/settings.png" alt="Settings" width="200">
+  <img src="docs/images/add-food.jpg" alt="Adding a food item" width="200">
+  <img src="docs/images/settings.jpg" alt="Settings" width="200">
 </p>
 
 ## What it does today
